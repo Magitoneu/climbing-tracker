@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "expo-start",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				". $HOME/.nvm/nvm.sh && cd /home/crider/projects/ct && pnpm run start"
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		}
+	]
+}
