@@ -40,7 +40,7 @@ export const gradeColors: Record<string, string> = {
 };
 // src/theme.ts
 export const colors = {
-  primary: '#46464bff', // vivid purple
+  primary: '#2563eb', // vivid purple
   accent: '#FF6F3C', // orange
   background: '#F5F6FA', // off-white
   surface: '#FFFFFF',

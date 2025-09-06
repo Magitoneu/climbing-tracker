@@ -162,7 +162,41 @@ export default function LogScreen() {
           multiline
           placeholderTextColor={colors.text}
         />
-  </KeyboardAwareScrollView>
+        <TouchableOpacity
+          style={[styles.buttonPrimary, { marginTop: 24, marginBottom: 8 }]}
+          onPress={async () => {
+            if (!duration || boulders.length === 0) {
+              Alert.alert('Please enter duration and add at least one boulder.');
+              return;
+            }
+            const session = {
+              date,
+              duration: parseInt(duration),
+              notes,
+              boulders,
+              gradeSystem,
+            };
+            try {
+              const prev = await store.getItem('sessions');
+              const sessions = prev ? JSON.parse(prev) : [];
+              sessions.push(session);
+              await store.setItem('sessions', JSON.stringify(sessions));
+              Alert.alert('Session saved!');
+              // Clear form fields after saving
+              setBoulders([]);
+              setNotes('');
+              setDuration('');
+              setGradeSystem('V');
+              setDate(() => new Date().toISOString().slice(0, 10));
+              setDateObj(new Date());
+            } catch (e) {
+              Alert.alert('Error saving session');
+            }
+          }}
+        >
+          <Text style={styles.buttonTextPrimary}>Save Session</Text>
+        </TouchableOpacity>
+      </KeyboardAwareScrollView>
       <BoulderModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
