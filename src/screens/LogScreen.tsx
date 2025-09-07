@@ -13,6 +13,7 @@ import BoulderModal from '../components/BoulderModal';
 import styles from './LogScreen.styles';
 
 import { V_GRADES, FONT_GRADES } from '../models/grades';
+import { aggregateBoulders, sortGrades, getMaxGrade, Boulder as BoulderType } from '../utils/boulderUtils';
 
 export default function LogScreen() {
   // Updated grade conversion maps (with ranges)
@@ -67,12 +68,7 @@ export default function LogScreen() {
   };
 
   // Aggregate boulders by grade
-  const gradeSummary = boulders.reduce<Record<string, { flash: number; total: number }>>((acc, b) => {
-    if (!acc[b.grade]) acc[b.grade] = { flash: 0, total: 0 };
-    acc[b.grade].total += 1;
-    if (b.flashed) acc[b.grade].flash += 1;
-    return acc;
-  }, {});
+  const gradeSummary = aggregateBoulders(boulders);
 
   return (
   <View style={[styles.container, { flex: 1 }]}> 
@@ -147,8 +143,8 @@ export default function LogScreen() {
                   if (idxB === -1) return -1;
                   return idxA - idxB;
                 })
-                .map(([grade, { flash, total }]) => (
-                  <BoulderPill key={grade} grade={convertGrade(grade, gradeSystem)} flash={flash} total={total} originalGrade={grade} />
+                .map(([grade, { flashed, total }]) => (
+                  <BoulderPill key={grade} grade={convertGrade(grade, gradeSystem)} flash={flashed} total={total} originalGrade={grade} />
                 ));
             })()
           )}

@@ -1,4 +1,5 @@
 
+import type { Boulder } from '../models/Boulder';
 interface BoulderRowProps {
   attempt: Attempt;
   onRemove: () => void;

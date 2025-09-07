@@ -18,18 +18,20 @@
 
 ## Refactoring & Code Quality
 
-1. Refactor inline styles in screens/components to use Tailwind CSS v4 (or a consistent utility-first approach).
-2. Extract repeated logic in LogScreen and SessionsScreen (e.g., boulder aggregation, grade sorting) into reusable utility functions or custom hooks.
-3. Move all prop and state types to dedicated types files for better type safety and reusability.
-4. Replace any usage of any in state or props with proper TypeScript interfaces.
-5. Modularize large screens (e.g., SessionsScreen) by splitting out subcomponents (edit modal, boulder list, etc.) into their own files.
-6. Ensure all UI components use shadcn/ui where possible for accessibility and design consistency.
-7. Add JSDoc comments to all principal functions, hooks, and components.
-8. Add a docs/architecture.md file documenting folder structure, data flow, and type safety strategy.
-9. Add linting and formatting configuration files to the repo (.eslintrc, .prettierrc).
-10. Add unit and integration tests for custom hooks, utility functions, and core screens/components.
-11. Review and update naming conventions for clarity and verbosity (e.g., avoid short/ambiguous names).
-12. Ensure all feature logic is co-located and grouped by feature, not by type.
+1. Ensure all UI components use shadcn/ui where possible for accessibility and design consistency.
+2. Add JSDoc comments to all principal functions, hooks, and components.
+3. Add a docs/architecture.md file documenting folder structure, data flow, and type safety strategy.
+4. Add linting and formatting configuration files to the repo (.eslintrc, .prettierrc).
+5.  Add unit and integration tests for custom hooks, utility functions, and core screens/components.
+6. Review and update naming conventions for clarity and verbosity (e.g., avoid short/ambiguous names).
+7. Ensure all feature logic is co-located and grouped by feature, not by type.
+5. Ensure all UI components use shadcn/ui where possible for accessibility and design consistency.
+6. Add JSDoc comments to all principal functions, hooks, and components.
+7. Add a docs/architecture.md file documenting folder structure, data flow, and type safety strategy.
+8. Add linting and formatting configuration files to the repo (.eslintrc, .prettierrc).
+9.  Add unit and integration tests for custom hooks, utility functions, and core screens/components.
+10. Review and update naming conventions for clarity and verbosity (e.g., avoid short/ambiguous names).
+11. Ensure all feature logic is co-located and grouped by feature, not by type.
 
 ## About Stats
 

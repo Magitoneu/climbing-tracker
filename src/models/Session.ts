@@ -13,4 +13,5 @@ export interface Session {
   notes?: string;
   gradeSystem: GradeSystem;
   attempts: Attempt[];
+  boulders?: import('./Boulder').Boulder[];
 }

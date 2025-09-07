@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, Text } from 'react-native';
 import { colors } from '../theme';
 
+import type { Boulder } from '../models/Boulder';
 interface FlashedToggleProps {
   value: boolean;
   onToggle: () => void;

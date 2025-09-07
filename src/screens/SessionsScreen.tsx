@@ -7,13 +7,18 @@ import store from '../storage/simpleStore';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../theme';
 import { V_GRADES, FONT_GRADES } from '../models/grades';
+import { aggregateBoulders, getMaxGrade, Boulder as BoulderType } from '../utils/boulderUtils';
+import SessionEditModal from '../components/SessionEditModal';
+import BoulderList from '../components/BoulderList';
+import type { Session } from '../models/Session';
+import type { Boulder } from '../models/Boulder';
 
 export default function SessionsScreen() {
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editSessionIndex, setEditSessionIndex] = useState<number | null>(null);
-  const [editSession, setEditSession] = useState<any | null>(null);
+  const [editSession, setEditSession] = useState<Session | null>(null);
   const [pickerOpenIndex, setPickerOpenIndex] = useState<number | null>(null);
 
   // Enable LayoutAnimation for Android
@@ -50,20 +55,11 @@ export default function SessionsScreen() {
           data={sessions}
           keyExtractor={(_, i) => i.toString()}
           renderItem={({ item, index }) => {
-            type Boulder = { grade: string; flashed: boolean };
             const boulders: Boulder[] = Array.isArray(item.boulders) ? item.boulders : [];
-            const duration = item.duration || 0;
-            const gradeOrder = item.gradeSystem === 'V' ? V_GRADES : FONT_GRADES;
-            const maxGrade = boulders.length > 0
-              ? boulders.reduce<string | null>((max: string | null, b: Boulder) => {
-                  if (max === null) return b.grade;
-                  const idxB = gradeOrder.indexOf(b.grade);
-                  const idxMax = gradeOrder.indexOf(max);
-                  return idxB > idxMax ? b.grade : max;
-                }, null)
-              : '—';
+            const duration = item.durationMinutes || 0;
+            const maxGrade = boulders.length > 0 ? getMaxGrade(boulders, item.gradeSystem) : '—';
             const totalBoulders = boulders.length;
-            const flashCount = boulders.filter((b: Boulder) => b.flashed).length;
+            const flashCount = boulders.filter(b => b.flashed).length;
             // Color accent by grade system
             const accentColor = item.gradeSystem === 'V' ? colors.primary : colors.accent;
             // Swipe-to-delete state
@@ -198,154 +194,23 @@ export default function SessionsScreen() {
           }}
         />
       )}
-      {/* Edit Modal */}
-      <Modal
+      <SessionEditModal
         visible={editModalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setEditModalVisible(false)}
-      >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.15)', justifyContent: 'center', alignItems: 'center' }}>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={{ width: '90%', maxHeight: '90%' }}
-            >
-              <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 24, width: '100%', maxHeight: '100%' }}>
-                <ScrollView>
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.primary, marginBottom: 16 }}>Edit Session</Text>
-              {editSession && (
-                <>
-                  <Text style={{ fontSize: 14, color: colors.text, marginBottom: 4 }}>Date</Text>
-                  <TextInput
-                    style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 8, marginBottom: 12, color: colors.text }}
-                    value={editSession.date}
-                    onChangeText={val => setEditSession({ ...editSession, date: val })}
-                  />
-                  <Text style={{ fontSize: 14, color: colors.text, marginBottom: 4 }}>Duration (min)</Text>
-                  <TextInput
-                    style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 8, marginBottom: 12, color: colors.text }}
-                    value={String(editSession.duration)}
-                    keyboardType="numeric"
-                    onChangeText={val => setEditSession({ ...editSession, duration: val.replace(/[^0-9]/g, '') })}
-                  />
-                  <Text style={{ fontSize: 14, color: colors.text, marginBottom: 4 }}>Notes</Text>
-                  <TextInput
-                    style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 8, marginBottom: 12, color: colors.text }}
-                    value={editSession.notes}
-                    onChangeText={val => setEditSession({ ...editSession, notes: val })}
-                  />
-                  <Text style={{ fontSize: 15, fontWeight: 'bold', color: colors.primary, marginBottom: 8 }}>Boulders</Text>
-                  {Array.isArray(editSession.boulders) && editSession.boulders.length > 0 ? (
-                    editSession.boulders.map((b: any, i: number) => (
-                      <View key={i} style={{ backgroundColor: colors.background, borderRadius: 12, padding: 12, marginBottom: 12, shadowColor: colors.primary, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                          <Text style={{ fontSize: 13, color: colors.text, fontWeight: 'bold' }}>Boulder {i + 1}</Text>
-                          {b.flashed && (
-                            <Ionicons
-                              name="flash"
-                              size={18}
-                              color={colors.flash || colors.primary}
-                              style={{ marginLeft: 6 }}
-                            />
-                          )}
-                        </View>
-                        {/* <Text style={{ fontSize: 13, color: colors.text, marginBottom: 2 }}>Grade</Text> */}
-                        {pickerOpenIndex !== i ? (
-                          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                            <Text style={{ fontSize: 15, color: colors.primary, fontWeight: 'bold', marginRight: 8 }}>{b.grade}</Text>
-                            <TouchableOpacity
-                              style={{ backgroundColor: colors.primary, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}
-                              onPress={() => setPickerOpenIndex(i)}
-                            >
-                              <Text style={{ color: colors.surface }}>Change Grade</Text>
-                            </TouchableOpacity>
-                          </View>
-                        ) : (
-                          <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginBottom: 8 }}>
-                            <Picker
-                              selectedValue={b.grade}
-                              onValueChange={val => {
-                                const updated = [...editSession.boulders];
-                                updated[i].grade = val;
-                                setEditSession({ ...editSession, boulders: updated });
-                                setPickerOpenIndex(null);
-                              }}
-                              style={{ color: colors.text }}
-                            >
-                              {(editSession.gradeSystem === 'V' ? V_GRADES : FONT_GRADES).map(g => (
-                                <Picker.Item key={g} label={g} value={g} />
-                              ))}
-                            </Picker>
-                          </View>
-                        )}
-                        <Text style={{ fontSize: 13, color: colors.text, marginBottom: 2 }}>Attempts</Text>
-                        <TextInput
-                          style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 8, marginBottom: 8, color: colors.text }}
-                          value={String(b.attempts)}
-                          keyboardType="numeric"
-                            onChangeText={val => {
-                              const updated = [...editSession.boulders];
-                              const attempts = val.replace(/[^0-9]/g, '');
-                              updated[i].attempts = attempts;
-                              updated[i].flashed = attempts === '1';
-                              setEditSession({ ...editSession, boulders: updated });
-                            }}
-                        />
-                        <TouchableOpacity
-                          style={{ backgroundColor: colors.error, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 16, alignSelf: 'flex-end' }}
-                          onPress={() => {
-                            const updated = [...editSession.boulders];
-                            updated.splice(i, 1);
-                            setEditSession({ ...editSession, boulders: updated });
-                          }}
-                        >
-                          <Text style={{ color: colors.surface }}>Remove Boulder</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))
-                  ) : (
-                    <Text style={{ color: colors.text, opacity: 0.7 }}>No boulders logged.</Text>
-                  )}
-                  {/* Add boulder button */}
-                  <TouchableOpacity
-                    style={{ backgroundColor: colors.primary, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 16, alignSelf: 'flex-start', marginBottom: 12 }}
-                    onPress={() => {
-                      const updated = Array.isArray(editSession.boulders) ? [...editSession.boulders] : [];
-                      updated.push({ grade: (editSession.gradeSystem === 'V' ? V_GRADES[0] : FONT_GRADES[0]), attempts: 1, flashed: true });
-                      setEditSession({ ...editSession, boulders: updated });
-                    }}
-                  >
-                    <Text style={{ color: colors.surface, fontWeight: 'bold' }}>Add Boulder</Text>
-                  </TouchableOpacity>
-                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 }}>
-                    <TouchableOpacity
-                      style={{ backgroundColor: colors.error, borderRadius: 8, paddingVertical: 8, paddingHorizontal: 18, marginRight: 8 }}
-                      onPress={() => setEditModalVisible(false)}
-                    >
-                      <Text style={{ color: colors.surface, fontWeight: 'bold' }}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{ backgroundColor: colors.primary, borderRadius: 8, paddingVertical: 8, paddingHorizontal: 18 }}
-                      onPress={async () => {
-                        if (editSessionIndex !== null) {
-                          const updated = [...sessions];
-                          updated[editSessionIndex] = editSession;
-                          setSessions(updated);
-                          await store.setItem('sessions', JSON.stringify(updated));
-                          setEditModalVisible(false);
-                        }
-                      }}
-                    >
-                      <Text style={{ color: colors.surface, fontWeight: 'bold' }}>Save</Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              )}
-              </ScrollView>
-            </View>
-          </KeyboardAvoidingView>
-        </View>
-      </Modal>
+        session={editSession}
+        pickerOpenIndex={pickerOpenIndex}
+        setPickerOpenIndex={setPickerOpenIndex}
+        onChange={s => setEditSession(s)}
+        onCancel={() => setEditModalVisible(false)}
+        onSave={async () => {
+          if (editSessionIndex !== null && editSession) {
+            const updated = [...sessions];
+            updated[editSessionIndex] = editSession;
+            setSessions(updated);
+            await store.setItem('sessions', JSON.stringify(updated));
+            setEditModalVisible(false);
+          }
+        }}
+      />
     </View>
   );
 }

@@ -5,6 +5,7 @@ import GradeSelector from './GradeSelector';
 import FlashedToggle from './FlashedToggle';
 import { V_GRADES, FONT_GRADES } from '../models/grades';
 
+import type { Boulder } from '../models/Boulder';
 interface BoulderModalProps {
   visible: boolean;
   onClose: () => void;

@@ -3,6 +3,7 @@ import { View, Pressable, Text, Platform } from 'react-native';
 import { colors } from '../theme';
 import { gradeColors } from '../theme';
 
+import type { Boulder } from '../models/Boulder';
 interface GradeSelectorProps {
   grades: string[];
   selected: string;

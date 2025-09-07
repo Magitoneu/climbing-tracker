@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { colors, gradeColors } from '../theme';
 
 
+import type { Boulder } from '../models/Boulder';
 interface BoulderPillProps {
   grade: string;
   flash: number;
