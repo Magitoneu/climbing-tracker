@@ -100,6 +100,3 @@ pnpm run web
 ---
 
 _Last updated: 2025-09-03_
-
-# TODO add custom grading, for gyms with colors, etc. 
-# TODO have a home page, it is wierd to land on log.
