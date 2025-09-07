@@ -57,7 +57,11 @@ export default function SessionsScreen() {
           renderItem={({ item, index }) => {
             const boulders: Boulder[] = Array.isArray(item.boulders) ? item.boulders : [];
             const duration = item.durationMinutes || 0;
-            const maxGrade = boulders.length > 0 ? getMaxGrade(boulders, item.gradeSystem) : '—';
+              const maxGrade = boulders.length > 0
+                ? ((item.gradeSystem === 'V' || item.gradeSystem === 'Font')
+                    ? getMaxGrade(boulders, item.gradeSystem)
+                    : getMaxGrade(boulders, 'V')) // fallback for custom systems
+                : '—';
             const totalBoulders = boulders.length;
             const flashCount = boulders.filter(b => b.flashed).length;
             // Color accent by grade system

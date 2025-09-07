@@ -66,7 +66,7 @@ const SessionEditModal: React.FC<SessionEditModalProps> = ({
                   <Text style={{ fontSize: 15, fontWeight: 'bold', color: colors.primary, marginBottom: 8 }}>Boulders</Text>
                   <BoulderList
                     boulders={session.boulders ?? []}
-                    gradeSystem={session.gradeSystem}
+                    gradeSystem={typeof session.gradeSystem === 'string' && (session.gradeSystem === 'V' || session.gradeSystem === 'Font') ? session.gradeSystem : 'V'}
                     pickerOpenIndex={pickerOpenIndex}
                     setPickerOpenIndex={setPickerOpenIndex}
                     onChange={(boulders: Boulder[]) => onChange({ ...session, boulders })}

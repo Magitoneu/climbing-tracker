@@ -1,4 +1,7 @@
-export type GradeSystem = 'V' | 'Font';
+
+import { Boulder } from './Boulder';
+
+export type GradeSystem = 'V' | 'Font' | string; // string for custom system ID
 
 export interface Attempt {
   grade: string; // e.g., 'V3' or '6A'
@@ -11,7 +14,7 @@ export interface Session {
   date: string; // ISO date
   durationMinutes?: number;
   notes?: string;
-  gradeSystem: GradeSystem;
+  gradeSystem: GradeSystem; // can be built-in or custom system ID
   attempts: Attempt[];
-  boulders?: import('./Boulder').Boulder[];
+  boulders?: Boulder[];
 }

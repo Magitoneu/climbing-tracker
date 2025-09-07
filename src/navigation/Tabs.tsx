@@ -1,4 +1,3 @@
-
 import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -6,7 +5,7 @@ import DashboardScreen from '../screens/DashboardScreen';
 import LogScreen from '../screens/LogScreen';
 import SessionsScreen from '../screens/SessionsScreen';
 import StatsScreen from '../screens/StatsScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import SettingsStack from '../screens/SettingsStack';
 import { colors } from '../theme';
 const Tab = createBottomTabNavigator();
 
@@ -30,11 +29,11 @@ export default function Tabs() {
         tabBarInactiveTintColor: colors.text,
       }}
     >
-  <Tab.Screen name="Dashboard" component={DashboardScreen} />
-  <Tab.Screen name="Log" component={LogScreen} />
-  <Tab.Screen name="Sessions" component={SessionsScreen} />
-  <Tab.Screen name="Stats" component={StatsScreen} />
-  <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="Log" component={LogScreen} />
+      <Tab.Screen name="Sessions" component={SessionsScreen} />
+      <Tab.Screen name="Stats" component={StatsScreen} />
+      <Tab.Screen name="Settings" component={SettingsStack} />
     </Tab.Navigator>
   );
 }

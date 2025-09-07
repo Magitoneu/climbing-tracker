@@ -1,4 +1,7 @@
+// ...existing code...
+import { getSelectedGradeSystem } from '../storage/customGradeSystemStore';
 import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, FlatList, Platform, Pressable } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -16,7 +19,6 @@ import { V_GRADES, FONT_GRADES } from '../models/grades';
 import { aggregateBoulders, sortGrades, getMaxGrade, Boulder as BoulderType } from '../utils/boulderUtils';
 
 export default function LogScreen() {
-  // Updated grade conversion maps (with ranges)
   // State hooks
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [dateObj, setDateObj] = useState(new Date());
@@ -28,10 +30,22 @@ export default function LogScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   // Modal state for adding boulders
   const [modalGrade, setModalGrade] = useState(V_GRADES[0]);
+  // Sync grade system from settings
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
+      getSelectedGradeSystem().then(system => {
+        if (isActive) setGradeSystem(system);
+      });
+      return () => { isActive = false; };
+    }, [])
+  );
   // Sync modalGrade with gradeSystem when modal is open
   React.useEffect(() => {
     if (modalVisible) {
-      setModalGrade(gradeSystem === 'V' ? V_GRADES[0] : FONT_GRADES[0]);
+      if (gradeSystem === 'V') setModalGrade(V_GRADES[0]);
+      else if (gradeSystem === 'Font') setModalGrade(FONT_GRADES[0]);
+      else setModalGrade(''); // fallback for custom systems
     }
   }, [gradeSystem, modalVisible]);
   const [modalFlashed, setModalFlashed] = useState(false);
@@ -93,27 +107,6 @@ export default function LogScreen() {
           onConfirm={handleDateChange}
           onCancel={() => setShowDatePicker(false)}
         />
-        <Text style={styles.label}>Grade System</Text>
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <Pressable
-            style={[styles.button, gradeSystem === 'V' && styles.buttonPrimary, { flex: 1, marginRight: 8 }]}
-            onPress={() => {
-              setGradeSystem('V');
-              setModalGrade(V_GRADES[0]);
-            }}
-          >
-            <Text style={[styles.buttonText, gradeSystem === 'V' && styles.buttonTextPrimary]}>V-Scale</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.button, gradeSystem === 'Font' && styles.buttonPrimary, { flex: 1 }]}
-            onPress={() => {
-              setGradeSystem('Font');
-              setModalGrade(FONT_GRADES[0]);
-            }}
-          >
-            <Text style={[styles.buttonText, gradeSystem === 'Font' && styles.buttonTextPrimary]}>Font</Text>
-          </Pressable>
-        </View>
         <Text style={styles.label}>Session Duration (minutes)</Text>
         <TextInput
           style={styles.input}
@@ -135,8 +128,12 @@ export default function LogScreen() {
               const gradeOrder = gradeSystem === 'V' ? V_GRADES : FONT_GRADES;
               return Object.entries(gradeSummary)
                 .sort(([a], [b]) => {
-                  const idxA = gradeOrder.indexOf(convertGrade(a, gradeSystem));
-                  const idxB = gradeOrder.indexOf(convertGrade(b, gradeSystem));
+                  const idxA = gradeOrder.indexOf(
+                    (gradeSystem === 'V' || gradeSystem === 'Font') ? convertGrade(a, gradeSystem) : a
+                  );
+                  const idxB = gradeOrder.indexOf(
+                    (gradeSystem === 'V' || gradeSystem === 'Font') ? convertGrade(b, gradeSystem) : b
+                  );
                   // If not found, sort alphabetically
                   if (idxA === -1 && idxB === -1) return a.localeCompare(b);
                   if (idxA === -1) return 1;
@@ -144,7 +141,7 @@ export default function LogScreen() {
                   return idxA - idxB;
                 })
                 .map(([grade, { flashed, total }]) => (
-                  <BoulderPill key={grade} grade={convertGrade(grade, gradeSystem)} flash={flashed} total={total} originalGrade={grade} />
+                  <BoulderPill key={grade} grade={(gradeSystem === 'V' || gradeSystem === 'Font') ? convertGrade(grade, gradeSystem) : grade} flash={flashed} total={total} originalGrade={grade} />
                 ));
             })()
           )}
@@ -203,7 +200,7 @@ export default function LogScreen() {
           ]);
           setModalVisible(false);
         }}
-        gradeSystem={gradeSystem}
+  gradeSystem={(gradeSystem === 'V' || gradeSystem === 'Font') ? gradeSystem : 'V'}
       />
     </View>
   );
