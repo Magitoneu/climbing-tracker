@@ -1,51 +1,75 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, ScrollView, StyleSheet, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, ScrollView, StyleSheet, Modal, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getCustomGradeSystems, getSelectedGradeSystem, setSelectedGradeSystem, deleteCustomGradeSystem } from '../storage/customGradeSystemStore';
+import { getCustomGradeSystems, getSelectedGradeSystem, setSelectedGradeSystem } from '../storage/customGradeSystemStore';
+import { useGradeDisplaySystem } from '../hooks/useGradeDisplaySystem';
 import { CustomGradeSystem } from '../models/CustomGradeSystem';
 import { V_GRADES, FONT_GRADES } from '../models/grades';
 import { gradeColors } from '../theme';
+import { CustomGradeSystemEditor } from '../components/CustomGradeSystem/CustomGradeSystemEditor';
+import { loadAndRegisterAllCustomSystems, upsertCustomSystem, removeCustomSystem } from '../services/customGradeSystemService';
+import { showConfirm, showAlert } from '../utils/alert';
 
+// Map legacy view to builtin canonical ids
 const DEFAULT_SYSTEMS: CustomGradeSystem[] = [
-	{ id: 'V', name: 'V Scale', grades: V_GRADES.map((g) => ({ name: g, color: '#2563eb' })) },
-	{ id: 'Font', name: 'Font Scale', grades: FONT_GRADES.map((g) => ({ name: g, color: '#16a34a' })) },
+	{ id: 'vscale', name: 'V Scale', grades: V_GRADES.map((g) => ({ name: g, color: '#2563eb' })) },
+	{ id: 'font', name: 'Font Scale', grades: FONT_GRADES.map((g) => ({ name: g, color: '#16a34a' })) },
 ];
 
 export default function SettingsGradeSystemScreen() {
+	const { systemId, setDisplaySystem } = useGradeDisplaySystem();
 	const [customSystems, setCustomSystems] = useState<CustomGradeSystem[]>([]);
-	const [selectedSystemId, setSelectedSystemId] = useState<string>('V');
+	const [selectedSystemId, setSelectedSystemId] = useState<string>(systemId);
 	const [showSelector, setShowSelector] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  const [editing, setEditing] = useState<CustomGradeSystem | null>(null);
 
 	useEffect(() => {
-		getCustomGradeSystems().then(setCustomSystems);
-		getSelectedGradeSystem().then(setSelectedSystemId);
+		getCustomGradeSystems().then(async (systems) => {
+        setCustomSystems(systems);
+        // register into runtime grade system service for pickers/conversions
+        await loadAndRegisterAllCustomSystems();
+      });
+		// legacy store still holds 'V'/'Font'; map once if found and persist new key elsewhere later if needed
+		getSelectedGradeSystem().then(legacy => {
+			if (legacy === 'V') setSelectedSystemId('vscale');
+			else if (legacy === 'Font') setSelectedSystemId('font');
+			else if (legacy) setSelectedSystemId(legacy);
+		});
 	}, []);
 
 	const allSystems = [...DEFAULT_SYSTEMS, ...customSystems];
 	const selectedSystem = allSystems.find((s) => s.id === selectedSystemId) || DEFAULT_SYSTEMS[0];
 
 	const handleSelectSystem = async (id: string) => {
-		await setSelectedGradeSystem(id);
 		setSelectedSystemId(id);
+		setDisplaySystem(id); // new canonical preference
+		// Keep legacy store loosely in sync for now (not required long term)
+		await setSelectedGradeSystem(id === 'vscale' ? 'V' : id === 'font' ? 'Font' : id);
 		setShowSelector(false);
 	};
 
-	const handleDeleteSystem = async (id: string) => {
-		await deleteCustomGradeSystem(id);
-		const updated = await getCustomGradeSystems();
-		setCustomSystems(updated);
-		if (selectedSystemId === id) {
-			setSelectedSystemId('V');
-		}
-	};
+		const handleDeleteSystem = async (id: string, name: string) => {
+			const message = `Are you sure you want to delete "${name}"?${selectedSystemId === id ? '\n\nIt is currently selected. We will switch you to V Scale.' : ''}`;
+			const confirmed = await showConfirm('Delete grade system', message);
+			if (!confirmed) return;
+			await removeCustomSystem(id);
+			const updated = await getCustomGradeSystems();
+			setCustomSystems(updated);
+			if (selectedSystemId === id) {
+				setSelectedSystemId('vscale');
+				setDisplaySystem('vscale');
+				await setSelectedGradeSystem('V');
+			}
+		};
 
-	const getGradeColor = (grade: { name: string; color: string }, systemId: string) => {
-		// For default systems, use theme gradeColors
-		if (systemId === 'V' || systemId === 'Font') {
+	const getGradeColor = (grade: { name: string; color: string }, sysId: string) => {
+		// Built-in systems: prefer theme colors to reflect known scale palette
+		if (sysId === 'vscale' || sysId === 'font') {
 			return gradeColors[grade.name] || '#e0e7ff';
 		}
-		// For custom, use user-defined color
-		return grade.color || '#e0e7ff';
+		// Custom systems: use user-defined color, fallback to theme if label matches
+		return grade.color || gradeColors[grade.name] || '#e0e7ff';
 	};
 
 	function getContrastColor(bgColor: string) {
@@ -69,8 +93,8 @@ export default function SettingsGradeSystemScreen() {
 				<Text style={styles.cardTitle}>Current System</Text>
 				<Text style={styles.cardName}>{selectedSystem.name}</Text>
 				<ScrollView horizontal style={styles.gradeScroll} showsHorizontalScrollIndicator={false}>
-					{selectedSystem.grades.map((grade, idx) => {
-						const bgColor = getGradeColor(grade, selectedSystem.id);
+								{selectedSystem.grades.map((grade, idx) => {
+									const bgColor = getGradeColor(grade, selectedSystem.id);
 						const textColor = getContrastColor(bgColor);
 						return (
 							<View key={grade.name} style={[styles.gradePill, { backgroundColor: bgColor }]}> 
@@ -94,6 +118,12 @@ export default function SettingsGradeSystemScreen() {
 					<View style={styles.customRow}>
 						<Text style={styles.customName}>{item.name}</Text>
 						<View style={styles.customActions}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => { setEditing(item); setShowEditor(true); }}
+              >
+                <Ionicons name="pencil-outline" size={22} color="#6b7280" />
+              </TouchableOpacity>
 							<TouchableOpacity
 								style={styles.iconButton}
 								onPress={() => handleSelectSystem(item.id)}
@@ -102,7 +132,7 @@ export default function SettingsGradeSystemScreen() {
 							</TouchableOpacity>
 							<TouchableOpacity
 								style={styles.iconButton}
-								onPress={() => handleDeleteSystem(item.id)}
+								onPress={() => handleDeleteSystem(item.id, item.name)}
 							>
 								<Ionicons name="trash-outline" size={22} color="#ef4444" />
 							</TouchableOpacity>
@@ -114,9 +144,7 @@ export default function SettingsGradeSystemScreen() {
 
 			<TouchableOpacity
 				style={styles.addButton}
-				onPress={() => {
-					/* TODO: open add custom system modal */
-				}}
+				onPress={() => { setEditing(null); setShowEditor(true); }}
 			>
 				<Ionicons name="add-circle-outline" size={20} color="#fff" />
 				<Text style={styles.addButtonText}>Add New Custom System</Text>
@@ -146,6 +174,24 @@ export default function SettingsGradeSystemScreen() {
 					</View>
 				</View>
 			</Modal>
+
+      {/* Editor Modal */}
+      <Modal visible={showEditor} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { width: 360, maxWidth: '95%' }]}>
+            <CustomGradeSystemEditor
+              system={editing}
+              onCancel={() => setShowEditor(false)}
+              onSave={async (payload) => {
+                const id = await upsertCustomSystem(payload);
+                const updated = await getCustomGradeSystems();
+                setCustomSystems(updated);
+                setShowEditor(false);
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
 		</View>
 	);
 }

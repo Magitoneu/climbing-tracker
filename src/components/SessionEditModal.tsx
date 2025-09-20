@@ -4,7 +4,7 @@ import { Modal } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Session } from '../models/Session';
 import type { Boulder } from '../models/Boulder';
-import { V_GRADES, FONT_GRADES } from '../models/grades';
+import { getGradeSystem } from '../services/gradeSystemService';
 import { colors } from '../theme';
 import BoulderList from './BoulderList';
 
@@ -66,7 +66,7 @@ const SessionEditModal: React.FC<SessionEditModalProps> = ({
                   <Text style={{ fontSize: 15, fontWeight: 'bold', color: colors.primary, marginBottom: 8 }}>Boulders</Text>
                   <BoulderList
                     boulders={session.boulders ?? []}
-                    gradeSystem={typeof session.gradeSystem === 'string' && (session.gradeSystem === 'V' || session.gradeSystem === 'Font') ? session.gradeSystem : 'V'}
+                    gradeSystem={typeof session.gradeSystem === 'string' ? session.gradeSystem : 'V'}
                     pickerOpenIndex={pickerOpenIndex}
                     setPickerOpenIndex={setPickerOpenIndex}
                     onChange={(boulders: Boulder[]) => onChange({ ...session, boulders })}
@@ -75,7 +75,11 @@ const SessionEditModal: React.FC<SessionEditModalProps> = ({
                     style={{ backgroundColor: colors.primary, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 16, alignSelf: 'flex-start', marginBottom: 12 }}
                     onPress={() => {
                       const updated = Array.isArray(session.boulders) ? [...session.boulders] : [];
-                      updated.push({ grade: (session.gradeSystem === 'V' ? V_GRADES[0] : FONT_GRADES[0]), attempts: 1, flashed: true });
+                      const sys = getGradeSystem(
+                        session.gradeSystem === 'V' ? 'vscale' : session.gradeSystem === 'Font' ? 'font' : (session.gradeSystem as string)
+                      );
+                      const first = sys?.grades?.[0]?.label || '';
+                      updated.push({ grade: first, attempts: 1, flashed: true });
                       onChange({ ...session, boulders: updated });
                     }}
                   >

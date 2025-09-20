@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Modal, Pressable } from 'react-native';
 import { styles } from './BoulderModal.styles';
 import GradeSelector from './GradeSelector';
 import FlashedToggle from './FlashedToggle';
-import { V_GRADES, FONT_GRADES } from '../models/grades';
+import { getGradeSystem } from '../services/gradeSystemService';
 
 import type { Boulder } from '../models/Boulder';
 interface BoulderModalProps {
   visible: boolean;
   onClose: () => void;
   onSave: (grade: string, attempts: number, flashed: boolean) => void;
-  gradeSystem: 'V' | 'Font';
+  gradeSystem: string; // builtin or custom id
 }
 
 const BoulderModal: React.FC<BoulderModalProps> = ({ visible, onClose, onSave, gradeSystem }) => {
@@ -35,7 +35,10 @@ const BoulderModal: React.FC<BoulderModalProps> = ({ visible, onClose, onSave, g
     });
   };
 
-  const grades = gradeSystem === 'V' ? V_GRADES : FONT_GRADES;
+  const sys = getGradeSystem(
+    gradeSystem === 'V' ? 'vscale' : gradeSystem === 'Font' ? 'font' : gradeSystem
+  );
+  const grades = sys ? sys.grades.map(g => g.label) : [];
 
   return (
     <Modal
@@ -45,13 +48,15 @@ const BoulderModal: React.FC<BoulderModalProps> = ({ visible, onClose, onSave, g
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View style={styles.modalContainer}>
+        {/* Backdrop catcher: only captures taps outside the modal container */}
+        <Pressable onPress={Keyboard.dismiss} style={{ position: 'absolute', inset: 0 }} />
+        <View style={styles.modalContainer}>
             <Text style={styles.title}>Add Boulder</Text>
             <GradeSelector
               grades={grades}
               selected={grade}
               onSelect={setGrade}
+              systemId={sys?.id}
             />
             <View style={styles.attemptsRow}>
               <Text style={styles.label}>Attempts</Text>
@@ -77,8 +82,7 @@ const BoulderModal: React.FC<BoulderModalProps> = ({ visible, onClose, onSave, g
                 <Text style={[styles.buttonText, { color: 'white' }]}>Add</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </TouchableWithoutFeedback>
+        </View>
       </View>
     </Modal>
   );

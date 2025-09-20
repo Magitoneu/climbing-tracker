@@ -1,12 +1,17 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, LayoutAnimation, UIManager, Platform, Animated, Modal, TextInput, ScrollView, KeyboardAvoidingView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import store from '../storage/simpleStore';
+import { subscribeToSessions, CloudSession, updateSession, deleteSession } from '../services/sessionService';
+import { Alert } from 'react-native';
+import { auth } from '../config/firebase';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors } from '../theme';
 import { V_GRADES, FONT_GRADES } from '../models/grades';
+// Display original logged grades only (no conversion)
+import { getGradeSystem } from '../services/gradeSystemService';
 import { aggregateBoulders, getMaxGrade, Boulder as BoulderType } from '../utils/boulderUtils';
 import SessionEditModal from '../components/SessionEditModal';
 import BoulderList from '../components/BoulderList';
@@ -28,21 +33,50 @@ export default function SessionsScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      let isActive = true;
-      (async () => {
-        try {
-          const data = await store.getItem('sessions');
-          let parsed = [];
-          if (data) {
-            parsed = JSON.parse(data);
-            if (!Array.isArray(parsed)) parsed = [];
-          }
-          if (isActive) setSessions(parsed);
-        } catch {
-          if (isActive) setSessions([]);
+      let cancelled = false;
+      let unsubscribe: (() => void) | null = null;
+
+      const attach = async () => {
+        // If not authenticated yet, just load local fallback
+        if (!auth.currentUser) {
+          try {
+            const data = await store.getItem('sessions');
+            const parsed = data ? JSON.parse(data) : [];
+            if (!cancelled) setSessions(parsed);
+          } catch { if (!cancelled) setSessions([]); }
+          return;
         }
-      })();
-      return () => { isActive = false; };
+        try {
+          unsubscribe = subscribeToSessions(async cloudSessions => {
+            if (cancelled) return;
+            // Normalize shape to existing UI expectations
+            const mapped = cloudSessions.map(s => ({
+              id: s.id,
+              date: s.date,
+              durationMinutes: typeof s.durationMinutes === 'number' ? s.durationMinutes : undefined,
+              notes: s.notes,
+              gradeSystem: s.gradeSystem,
+              boulders: Array.isArray(s.boulders) && s.boulders.length > 0
+                ? s.boulders
+                : (Array.isArray(s.attempts) ? s.attempts.map(a => ({ grade: a.grade, flashed: a.flashed, attempts: a.attempts })) : []),
+              attempts: Array.isArray(s.attempts) ? s.attempts : [],
+            }));
+            setSessions(mapped as any);
+            // Cache locally for offline
+            try { await store.setItem('sessions', JSON.stringify(mapped)); } catch {}
+          });
+        } catch (e) {
+          console.warn('[Sessions] Live subscribe failed, using local cache', (e as any)?.message);
+          try {
+            const data = await store.getItem('sessions');
+            const parsed = data ? JSON.parse(data) : [];
+            if (!cancelled) setSessions(parsed);
+          } catch { if (!cancelled) setSessions([]); }
+        }
+      };
+
+      attach();
+      return () => { cancelled = true; if (unsubscribe) unsubscribe(); };
     }, [])
   );
 
@@ -57,11 +91,38 @@ export default function SessionsScreen() {
           renderItem={({ item, index }) => {
             const boulders: Boulder[] = Array.isArray(item.boulders) ? item.boulders : [];
             const duration = item.durationMinutes || 0;
-              const maxGrade = boulders.length > 0
-                ? ((item.gradeSystem === 'V' || item.gradeSystem === 'Font')
-                    ? getMaxGrade(boulders, item.gradeSystem)
-                    : getMaxGrade(boulders, 'V')) // fallback for custom systems
-                : '—';
+            const maxGrade = boulders.length > 0
+              ? (() => {
+                  // Prefer canonical ranking to find the hardest, but display original label only
+                  const enriched = boulders.map(b => ({ b, cv: (b as any).canonicalValue ?? (b as any).gradeSnapshot?.canonicalValue }));
+                  const top = enriched.filter(e => e.cv != null).sort((a, b) => (b.cv! - a.cv!))[0];
+                  if (top) {
+                    const original = (top.b as any).gradeSnapshot?.originalLabel || top.b.grade;
+                    return original || '—';
+                  }
+                  // Fallback if no canonical values: use the session's own system ordering if available
+                  const sysId = ((): string => {
+                    const gs = item.gradeSystem;
+                    if (gs === 'V') return 'vscale';
+                    if (gs === 'Font') return 'font';
+                    return typeof gs === 'string' ? gs : 'vscale';
+                  })();
+                  const sys = getGradeSystem(sysId);
+                  if (sys) {
+                    const order = sys.grades.map(g => g.label);
+                    let bestLabel: string | null = null;
+                    let bestIdx = -1;
+                    for (const b of boulders) {
+                      const label = (b as any).gradeSnapshot?.originalLabel || b.grade;
+                      const idx = order.indexOf(label);
+                      if (idx > bestIdx) { bestIdx = idx; bestLabel = label; }
+                    }
+                    if (bestLabel) return bestLabel;
+                  }
+                  // Last resort: alphabetical max
+                  return boulders.map(b => (b as any).gradeSnapshot?.originalLabel || b.grade).sort().slice(-1)[0] || '—';
+                })()
+              : '—';
             const totalBoulders = boulders.length;
             const flashCount = boulders.filter(b => b.flashed).length;
             // Color accent by grade system
@@ -78,9 +139,25 @@ export default function SessionsScreen() {
 
             // Delete handler
             const handleDelete = async () => {
+              const target = sessions[index];
+              // Optimistic local removal
               const updated = sessions.filter((_, i) => i !== index);
               setSessions(updated);
-              await store.setItem('sessions', JSON.stringify(updated));
+              try { await store.setItem('sessions', JSON.stringify(updated)); } catch {}
+              if (target?.id && auth.currentUser) {
+                try {
+                  await deleteSession(target.id);
+                  // success - subscription will keep us in sync
+                } catch (e: any) {
+                  console.warn('[Sessions] Cloud delete failed, restoring locally', e?.message);
+                  Alert.alert('Delete failed (offline)', 'Will retry when connection returns.');
+                  // Restore locally if failed
+                  const restored = [...updated];
+                  restored.splice(index, 0, target);
+                  setSessions(restored);
+                  try { await store.setItem('sessions', JSON.stringify(restored)); } catch {}
+                }
+              }
             };
 
             // Edit handler
@@ -160,15 +237,20 @@ export default function SessionsScreen() {
                         {boulders.length === 0 ? (
                           <Text style={{ color: colors.text, opacity: 0.7 }}>No boulders logged.</Text>
                         ) : (
-                          boulders.map((b, i) => (
-                            <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                              <MaterialCommunityIcons name="circle" size={12} color={colors.primary} style={{ marginRight: 6 }} />
-                              <Text style={{ fontSize: 14, color: colors.text }}>{b.grade}</Text>
-                              {b.flashed && (
-                                <Ionicons name="flash" size={14} color={colors.flash} style={{ marginLeft: 6 }} />
-                              )}
-                            </View>
-                          ))
+                          boulders.map((b, i) => {
+                            const original = (b as any).gradeSnapshot?.originalLabel || b.grade;
+                            return (
+                              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                                <MaterialCommunityIcons name="circle" size={12} color={colors.primary} style={{ marginRight: 6 }} />
+                                <Text style={{ fontSize: 14, color: colors.text }}>
+                                  {original}
+                                </Text>
+                                {b.flashed && (
+                                  <Ionicons name="flash" size={14} color={colors.flash} style={{ marginLeft: 6 }} />
+                                )}
+                              </View>
+                            );
+                          })
                         )}
                         {item.notes ? (
                           <Text style={{ fontSize: 13, color: colors.text, opacity: 0.7, marginTop: 8, fontStyle: 'italic' }}>“{item.notes}”</Text>
@@ -207,11 +289,31 @@ export default function SessionsScreen() {
         onCancel={() => setEditModalVisible(false)}
         onSave={async () => {
           if (editSessionIndex !== null && editSession) {
-            const updated = [...sessions];
-            updated[editSessionIndex] = editSession;
-            setSessions(updated);
-            await store.setItem('sessions', JSON.stringify(updated));
+            const prev = sessions[editSessionIndex];
+            const updatedList = [...sessions];
+            updatedList[editSessionIndex] = editSession;
+            setSessions(updatedList);
+            try { await store.setItem('sessions', JSON.stringify(updatedList)); } catch {}
             setEditModalVisible(false);
+            // Cloud update if possible
+            if (editSession.id && auth.currentUser) {
+              try {
+                await updateSession(editSession.id, {
+                  date: editSession.date,
+                  durationMinutes: editSession.durationMinutes,
+                  notes: editSession.notes,
+                  gradeSystem: editSession.gradeSystem,
+                  attempts: Array.isArray(editSession.attempts) && editSession.attempts.length > 0
+                    ? editSession.attempts
+                    : (editSession.boulders || []).map(b => ({ grade: b.grade, attempts: b.attempts ?? 1, flashed: b.flashed })),
+                  boulders: editSession.boulders || [],
+                } as any);
+                // Success: subscription will reflect final state
+              } catch (e: any) {
+                console.warn('[Sessions] Cloud update failed, keeping local version', e?.message);
+                Alert.alert('Update saved locally', 'Could not sync to cloud (offline).');
+              }
+            }
           }
         }}
       />

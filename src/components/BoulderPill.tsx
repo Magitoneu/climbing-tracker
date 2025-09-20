@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, gradeColors } from '../theme';
+import { getAllGradeSystems } from '../services/gradeSystemService';
 
 
 import type { Boulder } from '../models/Boulder';
@@ -9,10 +10,16 @@ interface BoulderPillProps {
   flash: number;
   total: number;
   originalGrade?: string;
+  systemId?: string;
 }
 
-export default function BoulderPill({ grade, flash, total }: BoulderPillProps) {
-  const gradeColor = gradeColors[grade] || '#888';
+export default function BoulderPill({ grade, flash, total, systemId }: BoulderPillProps) {
+  let gradeColor = gradeColors[grade] || '#888';
+  if (systemId) {
+    const sys = getAllGradeSystems().find(s => s.id === systemId);
+    const c = sys?.grades.find(g => g.label === grade)?.color;
+    if (c) gradeColor = c;
+  }
   return (
     <View style={styles.pill}>
       <View style={styles.pillContent}>

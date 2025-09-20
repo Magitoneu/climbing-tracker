@@ -3,12 +3,13 @@ import { View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Boulder } from '../models/Boulder';
-import { V_GRADES, FONT_GRADES } from '../models/grades';
+import { getGradeSystem } from '../services/gradeSystemService';
+import { useGradeDisplaySystem, formatBoulder } from '../hooks/useGradeDisplaySystem';
 import { colors } from '../theme';
 
 interface BoulderListProps {
   boulders: Boulder[];
-  gradeSystem: 'V' | 'Font';
+  gradeSystem: string; // builtin or custom id
   pickerOpenIndex: number | null;
   setPickerOpenIndex: (i: number | null) => void;
   onChange: (boulders: Boulder[]) => void;
@@ -21,6 +22,7 @@ const BoulderList: React.FC<BoulderListProps> = ({
   setPickerOpenIndex,
   onChange,
 }) => {
+  const { systemId } = useGradeDisplaySystem();
   return (
     <>
       {boulders.length > 0 ? (
@@ -34,7 +36,16 @@ const BoulderList: React.FC<BoulderListProps> = ({
             </View>
             {pickerOpenIndex !== i ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 15, color: colors.primary, fontWeight: 'bold', marginRight: 8 }}>{b.grade}</Text>
+                {(() => {
+                  const converted = formatBoulder(b, systemId);
+                  const original = (b as any).gradeSnapshot?.originalLabel || b.grade;
+                  const showDual = original && original !== converted.label;
+                  return (
+                    <Text style={{ fontSize: 15, color: colors.primary, fontWeight: 'bold', marginRight: 8 }}>
+                      {converted.approximate ? '~' : ''}{converted.label}{showDual ? ` (${original})` : ''}
+                    </Text>
+                  );
+                })()}
                 <TouchableOpacity
                   style={{ backgroundColor: colors.primary, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}
                   onPress={() => setPickerOpenIndex(i)}
@@ -54,9 +65,15 @@ const BoulderList: React.FC<BoulderListProps> = ({
                   }}
                   style={{ color: colors.text }}
                 >
-                  {(gradeSystem === 'V' ? V_GRADES : FONT_GRADES).map(g => (
-                    <Picker.Item key={g} label={g} value={g} />
-                  ))}
+                  {(() => {
+                    const sys = getGradeSystem(
+                      gradeSystem === 'V' ? 'vscale' : gradeSystem === 'Font' ? 'font' : gradeSystem
+                    );
+                    const options = sys ? sys.grades.map(g => g.label) : [];
+                    return options.map(g => (
+                      <Picker.Item key={g} label={g} value={g} />
+                    ));
+                  })()}
                 </Picker>
               </View>
             )}
