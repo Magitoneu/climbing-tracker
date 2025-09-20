@@ -1,0 +1,145 @@
+openapi: 3.0.0
+info:
+  title: Climbing Tracker API
+  version: 1.0.0
+paths:
+  /sessions:
+    post:
+      summary: Log a new climbing session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClimbingSession'
+      responses:
+        '201':
+          description: Session created
+    get:
+      summary: Get all climbing sessions for user
+      responses:
+        '200':
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClimbingSession'
+  /goals:
+    post:
+      summary: Create a new climbing goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Goal'
+      responses:
+        '201':
+          description: Goal created
+    get:
+      summary: Get all goals for user
+      responses:
+        '200':
+          description: List of goals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Goal'
+  /grading-systems:
+    get:
+      summary: Get available grading systems
+      responses:
+        '200':
+          description: List of grading systems
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GradingSystem'
+  /auth/login:
+    post:
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Unauthorized
+  /auth/recover:
+    post:
+      summary: Password recovery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Recovery email sent
+components:
+  schemas:
+    ClimbingSession:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        date:
+          type: string
+          format: date
+        location:
+          type: string
+        type:
+          type: string
+        difficulty:
+          type: string
+        notes:
+          type: string
+    Goal:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        targetDifficulty:
+          type: string
+        type:
+          type: string
+        timeframe:
+          type: string
+        progressStatus:
+          type: string
+    GradingSystem:
+      type: object
+      properties:
+        id:
+          type: string
+        systemName:
+          type: string
+        gradeList:
+          type: array
+          items:
+            type: string
+        associatedGym:
+          type: string

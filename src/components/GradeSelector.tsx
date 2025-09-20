@@ -1,16 +1,22 @@
 import React from 'react';
 import { View, Pressable, Text, Platform } from 'react-native';
-import { colors } from '../theme';
-import { gradeColors } from '../theme';
+import { colors, gradeColors } from '../theme';
+import { getGradeSystem } from '../services/gradeSystemService';
 
 import type { Boulder } from '../models/Boulder';
 interface GradeSelectorProps {
   grades: string[];
   selected: string;
   onSelect: (grade: string) => void;
+  systemId?: string; // for custom systems to colorize labels
 }
 
-export default function GradeSelector({ grades, selected, onSelect }: GradeSelectorProps) {
+export default function GradeSelector({ grades, selected, onSelect, systemId }: GradeSelectorProps) {
+  const sys = systemId ? getGradeSystem(systemId) : undefined;
+  const colorFor = (label: string) => {
+    const sysColor = sys?.grades.find(g => g.label === label)?.color;
+    return sysColor || gradeColors[label] || colors.primary;
+  };
   return (
     <View
       style={{
@@ -26,16 +32,16 @@ export default function GradeSelector({ grades, selected, onSelect }: GradeSelec
           key={grade}
           style={{
             borderWidth: 1,
-            borderColor: gradeColors[grade] || colors.primary,
+            borderColor: colorFor(grade),
             borderRadius: 16,
             paddingVertical: 6,
             paddingHorizontal: 14,
             marginBottom: 8,
-            backgroundColor: selected === grade ? (gradeColors[grade] || colors.primary) : colors.surface,
+            backgroundColor: selected === grade ? colorFor(grade) : colors.surface,
           }}
           onPress={() => onSelect(grade)}
         >
-          <Text style={{ color: selected === grade ? colors.surface : (gradeColors[grade] || colors.primary), fontWeight: selected === grade ? 'bold' : 'normal' }}>{grade}</Text>
+          <Text style={{ color: selected === grade ? colors.surface : colorFor(grade), fontWeight: selected === grade ? 'bold' : 'normal' }}>{grade}</Text>
         </Pressable>
       ))}
     </View>

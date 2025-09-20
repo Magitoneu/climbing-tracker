@@ -42,3 +42,15 @@ export async function deleteCustomGradeSystem(id: string): Promise<void> {
   const updated = systems.filter(s => s.id !== id);
   await saveCustomGradeSystems(updated);
 }
+
+export async function getCustomGradeSystemById(id: string): Promise<CustomGradeSystem | undefined> {
+  const systems = await getCustomGradeSystems();
+  return systems.find(s => s.id === id);
+}
+
+export async function upsertCustomGradeSystem(system: CustomGradeSystem): Promise<void> {
+  const systems = await getCustomGradeSystems();
+  const idx = systems.findIndex(s => s.id === system.id);
+  if (idx >= 0) systems[idx] = system; else systems.push(system);
+  await saveCustomGradeSystems(systems);
+}
