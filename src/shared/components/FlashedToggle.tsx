@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text } from 'react-native';
+import { Pressable, Text, StyleSheet } from 'react-native';
 import { colors } from '../theme';
 
 interface FlashedToggleProps {
@@ -10,33 +10,46 @@ interface FlashedToggleProps {
 export default function FlashedToggle({ value, onToggle }: FlashedToggleProps) {
   return (
     <Pressable
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        paddingVertical: 8,
-        paddingHorizontal: 10,
-        borderRadius: 10,
-        backgroundColor: value ? colors.flash : colors.surface,
-        borderWidth: 2,
-        borderColor: colors.primary,
-        marginBottom: 8,
-      }}
+      style={[
+        styles.button,
+        {
+          backgroundColor: value ? colors.flash : colors.surface,
+          borderColor: colors.primary,
+        },
+      ]}
       onPress={onToggle}
     >
       <Text
-        style={{
-          color: value ? colors.surface : colors.primary,
-          fontWeight: '700',
-          textAlign: 'center',
-          textShadowColor: value ? colors.primary : colors.surface,
-          textShadowOffset: { width: 0, height: 0 },
-          textShadowRadius: 2,
-          fontSize: 16,
-        }}
+        style={[
+          styles.text,
+          {
+            color: value ? colors.surface : colors.primary,
+            textShadowColor: value ? colors.primary : colors.surface,
+          },
+        ]}
       >
         Flashed
       </Text>
     </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    borderRadius: 10,
+    borderWidth: 2,
+    flexDirection: 'row',
+    marginBottom: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 2,
+  },
+});

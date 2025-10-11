@@ -3,6 +3,18 @@ import { colors } from '../../../shared/theme';
 import type { ViewStyle, TextStyle } from 'react-native';
 
 const styles = StyleSheet.create({
+  addBoulderButton: {
+    alignItems: 'center' as ViewStyle['alignItems'],
+    backgroundColor: '#2563EB',
+    borderRadius: 14,
+    marginBottom: 12,
+    paddingVertical: 14,
+  },
+  addBoulderText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600' as TextStyle['fontWeight'],
+  },
   boulderRow: {
     alignItems: 'center' as ViewStyle['alignItems'],
     backgroundColor: colors.surface,
@@ -17,6 +29,12 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '700' as TextStyle['fontWeight'],
     marginRight: 12,
+  },
+  bouldersContainer: {
+    flexDirection: 'row' as ViewStyle['flexDirection'],
+    flexWrap: 'wrap' as ViewStyle['flexWrap'],
+    justifyContent: 'flex-start' as ViewStyle['justifyContent'],
+    marginTop: 4,
   },
   button: {
     alignItems: 'center' as ViewStyle['alignItems'],
@@ -72,6 +90,30 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: colors.background,
   } as ViewStyle,
+  durationInput: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    borderWidth: 1,
+    fontSize: 16,
+    marginBottom: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  emptyLoggedText: {
+    color: '#64748B',
+    marginBottom: 8,
+  },
+  emptyText: {
+    color: '#888',
+    marginVertical: 8,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 12,
+    marginBottom: 12,
+    marginTop: -4,
+  },
   input: {
     borderWidth: 1,
     borderColor: colors.primary,
@@ -87,6 +129,20 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     marginTop: 12,
   },
+  loggedBouldersLabel: {
+    color: '#0F172A',
+    fontWeight: '600' as TextStyle['fontWeight'],
+    marginBottom: 4,
+    marginTop: 16,
+  },
+  manageSystemsButton: {
+    alignSelf: 'flex-start' as ViewStyle['alignSelf'],
+    marginBottom: 8,
+  },
+  manageSystemsText: {
+    color: colors.primary,
+    fontWeight: '600' as TextStyle['fontWeight'],
+  },
   modalContent: {
     backgroundColor: colors.surface,
     borderRadius: 10,
@@ -100,6 +156,54 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.3)',
     flex: 1,
     justifyContent: 'center' as ViewStyle['justifyContent'],
+  },
+  notesInput: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    borderWidth: 1,
+    fontSize: 15,
+    height: 80,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    textAlignVertical: 'top' as TextStyle['textAlignVertical'],
+  },
+  notesLabel: {
+    color: '#0F172A',
+    fontWeight: '600' as TextStyle['fontWeight'],
+    marginBottom: 4,
+    marginTop: 16,
+  },
+  saveButton: {
+    alignItems: 'center' as ViewStyle['alignItems'],
+    backgroundColor: '#0F172A',
+    borderRadius: 16,
+    marginBottom: 12,
+    marginTop: 28,
+    paddingVertical: 16,
+  },
+  saveButtonDisabled: {
+    opacity: 0.7,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700' as TextStyle['fontWeight'],
+  },
+  screenContainer: {
+    backgroundColor: '#F1F5F9',
+    flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: 32,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  sectionLabel: {
+    color: '#0F172A',
+    fontWeight: '600' as TextStyle['fontWeight'],
+    marginBottom: 4,
   },
 });
 

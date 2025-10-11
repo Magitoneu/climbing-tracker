@@ -29,6 +29,7 @@ import SessionEditModal from '../components/SessionEditModal';
 import BoulderList from '../components/BoulderList';
 import type { Session } from '../models/Session';
 import type { Boulder } from '../models/Boulder';
+import { styles, getDynamicStyles } from './SessionsScreen.styles';
 
 export default function SessionsScreen() {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -109,11 +110,9 @@ export default function SessionsScreen() {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background, padding: 2 }}>
+    <View style={styles.container}>
       {!sessions || sessions.length === 0 ? (
-        <Text style={{ color: colors.text, opacity: 0.5, fontSize: 16, textAlign: 'center', marginTop: 32 }}>
-          No sessions logged yet.
-        </Text>
+        <Text style={styles.emptyText}>No sessions logged yet.</Text>
       ) : (
         <FlatList
           data={sessions}
@@ -169,6 +168,7 @@ export default function SessionsScreen() {
             const flashCount = boulders.filter(b => b.flashed).length;
             // Color accent by grade system
             const accentColor = item.gradeSystem === 'V' ? colors.primary : colors.accent;
+            const dynamicStyles = getDynamicStyles(accentColor);
             // Swipe-to-delete state
             const swipeX = new Animated.Value(0);
             let swiped = false;
@@ -219,10 +219,12 @@ export default function SessionsScreen() {
 
             return (
               <Animated.View
-                style={{
-                  transform: [{ translateX: swipeX }],
-                  marginBottom: 16,
-                }}
+                style={[
+                  styles.sessionCard,
+                  {
+                    transform: [{ translateX: swipeX }],
+                  },
+                ]}
                 {...{
                   onStartShouldSetResponder: () => true,
                   onResponderMove: e => {
@@ -250,117 +252,74 @@ export default function SessionsScreen() {
                 }}
               >
                 <TouchableOpacity activeOpacity={0.85} onPress={handleExpand}>
-                  <View
-                    style={{
-                      backgroundColor: colors.surface,
-                      borderRadius: 16,
-                      shadowColor: colors.primary,
-                      shadowOpacity: 0.08,
-                      shadowRadius: 8,
-                      elevation: 3,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <View style={{ height: 6, backgroundColor: accentColor }} />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
-                      <Ionicons name="calendar" size={22} color={accentColor} style={{ marginRight: 8 }} />
-                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: accentColor, flex: 1 }}>{item.date}</Text>
-                      <MaterialCommunityIcons name="trophy" size={22} color={accentColor} style={{ marginRight: 4 }} />
-                      <Text style={{ fontSize: 16, color: accentColor }}>{maxGrade}</Text>
+                  <View style={styles.card}>
+                    <View style={[styles.accentBar, dynamicStyles.accentBar]} />
+                    <View style={styles.headerRow}>
+                      <Ionicons name="calendar" size={22} color={accentColor} style={styles.iconMarginRight} />
+                      <Text style={[styles.dateText, dynamicStyles.dateText]}>{item.date}</Text>
+                      <MaterialCommunityIcons
+                        name="trophy"
+                        size={22}
+                        color={accentColor}
+                        style={styles.iconMarginRight4}
+                      />
+                      <Text style={[styles.maxGradeText, dynamicStyles.maxGradeText]}>{maxGrade}</Text>
                     </View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        paddingHorizontal: 16,
-                        paddingBottom: 8,
-                      }}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Ionicons name="time" size={18} color={colors.text} style={{ marginRight: 4, opacity: 0.7 }} />
-                        <Text style={{ fontSize: 14, color: colors.text, opacity: 0.7 }}>{duration} min</Text>
+                    <View style={styles.statsRow}>
+                      <View style={styles.statItem}>
+                        <Ionicons name="time" size={18} color={colors.text} style={styles.iconWithOpacity} />
+                        <Text style={styles.statText}>{duration} min</Text>
                       </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={styles.statItem}>
                         <MaterialCommunityIcons
                           name="carabiner"
                           size={18}
                           color={colors.text}
-                          style={{ marginRight: 4, opacity: 0.7 }}
+                          style={styles.iconWithOpacity}
                         />
-                        <Text style={{ fontSize: 14, color: colors.text, opacity: 0.7 }}>{totalBoulders} boulders</Text>
+                        <Text style={styles.statText}>{totalBoulders} boulders</Text>
                       </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Ionicons name="flash" size={18} color={colors.flash} style={{ marginRight: 4 }} />
-                        <Text style={{ fontSize: 14, color: colors.text, opacity: 0.7 }}>
+                      <View style={styles.statItem}>
+                        <Ionicons name="flash" size={18} color={colors.flash} style={styles.iconMarginRight4} />
+                        <Text style={styles.flashText}>
                           {flashCount} / {totalBoulders} flashes
                         </Text>
                       </View>
                     </View>
                     {/* Expanded details */}
                     {expandedIndex === index && (
-                      <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
-                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: accentColor, marginBottom: 6 }}>
-                          Boulders:
-                        </Text>
+                      <View style={styles.expandedContainer}>
+                        <Text style={[styles.expandedTitle, dynamicStyles.expandedTitle]}>Boulders:</Text>
                         {boulders.length === 0 ? (
-                          <Text style={{ color: colors.text, opacity: 0.7 }}>No boulders logged.</Text>
+                          <Text style={styles.noBoulders}>No boulders logged.</Text>
                         ) : (
                           boulders.map((b, i) => {
                             const original = (b as any).gradeSnapshot?.originalLabel || b.grade;
                             return (
-                              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                              <View key={i} style={styles.boulderRow}>
                                 <MaterialCommunityIcons
                                   name="circle"
                                   size={12}
                                   color={colors.primary}
-                                  style={{ marginRight: 6 }}
+                                  style={styles.boulderCircle}
                                 />
-                                <Text style={{ fontSize: 14, color: colors.text }}>{original}</Text>
+                                <Text style={styles.boulderGradeText}>{original}</Text>
                                 {b.flashed && (
-                                  <Ionicons name="flash" size={14} color={colors.flash} style={{ marginLeft: 6 }} />
+                                  <Ionicons name="flash" size={14} color={colors.flash} style={styles.flashIcon} />
                                 )}
                               </View>
                             );
                           })
                         )}
-                        {item.notes ? (
-                          <Text
-                            style={{
-                              fontSize: 13,
-                              color: colors.text,
-                              opacity: 0.7,
-                              marginTop: 8,
-                              fontStyle: 'italic',
-                            }}
-                          >
-                            “{item.notes}”
-                          </Text>
-                        ) : null}
+                        {item.notes ? <Text style={styles.notesText}>&ldquo;{item.notes}&rdquo;</Text> : null}
                         {/* Edit/Delete actions */}
-                        <View style={{ flexDirection: 'row', marginTop: 12 }}>
-                          <TouchableOpacity
-                            style={{
-                              backgroundColor: colors.error,
-                              borderRadius: 8,
-                              paddingVertical: 6,
-                              paddingHorizontal: 16,
-                              marginRight: 8,
-                            }}
-                            onPress={handleDelete}
-                          >
-                            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>Delete</Text>
+                        <View style={styles.actionRow}>
+                          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+                            <Text style={styles.buttonText}>Delete</Text>
                           </TouchableOpacity>
                           {/* Placeholder for Edit */}
-                          <TouchableOpacity
-                            style={{
-                              backgroundColor: colors.primary,
-                              borderRadius: 8,
-                              paddingVertical: 6,
-                              paddingHorizontal: 16,
-                            }}
-                            onPress={handleEdit}
-                          >
-                            <Text style={{ color: colors.surface, fontWeight: 'bold' }}>Edit</Text>
+                          <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+                            <Text style={styles.buttonText}>Edit</Text>
                           </TouchableOpacity>
                         </View>
                       </View>

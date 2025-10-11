@@ -4,6 +4,7 @@ import Tabs from './src/navigation/Tabs';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthScreen } from './src/features/auth';
 import { useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useMigrateLocalSessions } from './src/shared/hooks/useMigrateLocalSessions';
 import { auth } from './src/config/firebase';
@@ -71,7 +72,7 @@ export default function App() {
   if (loading) return null; // Optionally show a splash screen
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={styles.container}>
       <NavigationContainer>
         {isAuthenticated ? <Tabs /> : <AuthScreen />}
         <StatusBar style="auto" />
@@ -79,3 +80,9 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
