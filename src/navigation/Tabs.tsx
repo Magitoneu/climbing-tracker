@@ -86,12 +86,12 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     borderTopWidth: 1,
     height: 70,
-    paddingBottom: 8,
-    paddingTop: 8,
+    paddingBottom: 12,
+    paddingTop: 4,
   },
   tabBarLabel: {
     ...typography.caption,
     fontSize: 11,
-    marginTop: 2,
+    marginTop: 0,
   },
 });
