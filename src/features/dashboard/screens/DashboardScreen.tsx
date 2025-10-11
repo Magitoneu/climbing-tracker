@@ -2,7 +2,11 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../../../shared/design/theme';
+import { typography } from '../../../shared/design/typography';
+import { spacing } from '../../../shared/design/spacing';
+import { ClimbingIcon } from '../../../shared/components/icons/ClimbingIcon';
+import { climbingEncouragement } from '../../../shared/utils/climbingCopy';
 
 type TabParamList = {
   Dashboard: undefined;
@@ -24,7 +28,7 @@ const DashboardScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back!</Text>
+      <Text style={styles.title}>{climbingEncouragement.comeback}</Text>
       <View style={styles.statsContainer}>
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>Sessions</Text>
@@ -45,7 +49,7 @@ const DashboardScreen: React.FC = () => {
         onPress={() => navigation.navigate('Log')}
         accessibilityLabel="Log new session"
       >
-        <Ionicons name="add" size={32} color="#fff" />
+        <ClimbingIcon name="chalkBag" size={32} color={colors.textOnPrimary} />
       </TouchableOpacity>
     </View>
   );
@@ -53,14 +57,14 @@ const DashboardScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.background,
     flex: 1,
     justifyContent: 'flex-start',
-    padding: 24,
+    padding: spacing.lg,
   },
   fab: {
     alignItems: 'center',
-    backgroundColor: '#2563eb',
+    backgroundColor: colors.primary,
     borderRadius: 32,
     bottom: 32,
     elevation: 4,
@@ -69,41 +73,41 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 24,
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     width: 56,
   },
   statBox: {
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     elevation: 2,
     minWidth: 90,
-    padding: 16,
+    padding: spacing.md,
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
   },
   statLabel: {
-    color: '#64748b',
-    fontSize: 14,
-    marginBottom: 4,
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
   },
   statValue: {
-    color: '#2563eb',
-    fontSize: 20,
-    fontWeight: 'bold',
+    ...typography.h2,
+    color: colors.primary,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   title: {
-    color: '#2563eb',
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 24,
+    ...typography.h1,
+    color: colors.primary,
+    marginBottom: spacing.lg,
   },
 });
 
