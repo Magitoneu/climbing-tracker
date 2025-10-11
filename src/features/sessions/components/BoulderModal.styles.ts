@@ -6,6 +6,13 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     marginVertical: 16,
   },
+  backdrop: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -16,6 +23,9 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  buttonTextWhite: {
+    color: 'white',
   },
   cancelButton: {
     backgroundColor: '#eee',
@@ -57,10 +67,8 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   saveButton: {
-    backgroundColor: '#007bff',
-    borderRadius: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    backgroundColor: '#2563eb',
+    marginLeft: 8,
   },
   title: {
     fontSize: 20,

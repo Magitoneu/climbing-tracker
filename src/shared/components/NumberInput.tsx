@@ -9,6 +9,14 @@ interface Props {
   disabled?: boolean;
 }
 
+const webInputStyle = {
+  width: 72,
+  padding: 8,
+  border: '1px solid #ccc',
+  borderRadius: 8,
+  textAlign: 'center' as const,
+};
+
 export const NumberInput: React.FC<Props> = ({ value, onChange, min = 0, max = 999, disabled }) => {
   if (Platform.OS === 'web') {
     return (
@@ -25,7 +33,7 @@ export const NumberInput: React.FC<Props> = ({ value, onChange, min = 0, max = 9
           if (n > max) return onChange(max);
           onChange(n);
         }}
-        style={{ width: 72, padding: 8, border: '1px solid #ccc', borderRadius: 8, textAlign: 'center' }}
+        style={webInputStyle}
         disabled={disabled}
       />
     );

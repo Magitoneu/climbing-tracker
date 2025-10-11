@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Pressable, Text, Platform } from 'react-native';
+import { View, Pressable, Text, Platform, StyleSheet } from 'react-native';
 import { colors, gradeColors } from '../../../shared/theme';
 import { getGradeSystem } from '../services/gradeSystemService';
 
@@ -18,39 +18,62 @@ export default function GradeSelector({ grades, selected, onSelect, systemId }: 
     return sysColor || gradeColors[label] || colors.primary;
   };
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginBottom: 8,
-        justifyContent: 'center',
-        gap: 8,
-      }}
-    >
-      {grades.map(grade => (
-        <Pressable
-          key={grade}
-          style={{
-            borderWidth: 1,
-            borderColor: colorFor(grade),
-            borderRadius: 16,
-            paddingVertical: 6,
-            paddingHorizontal: 14,
-            marginBottom: 8,
-            backgroundColor: selected === grade ? colorFor(grade) : colors.surface,
-          }}
-          onPress={() => onSelect(grade)}
-        >
-          <Text
-            style={{
-              color: selected === grade ? colors.surface : colorFor(grade),
-              fontWeight: selected === grade ? 'bold' : 'normal',
-            }}
+    <View style={styles.container}>
+      {grades.map(grade => {
+        const isSelected = selected === grade;
+        const gradeColor = colorFor(grade);
+        return (
+          <Pressable
+            key={grade}
+            style={[
+              styles.pill,
+              {
+                borderColor: gradeColor,
+                backgroundColor: isSelected ? gradeColor : colors.surface,
+              },
+            ]}
+            onPress={() => onSelect(grade)}
           >
-            {grade}
-          </Text>
-        </Pressable>
-      ))}
+            <Text
+              style={[
+                styles.text,
+                isSelected ? styles.textBold : styles.textNormal,
+                {
+                  color: isSelected ? colors.surface : gradeColor,
+                },
+              ]}
+            >
+              {grade}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  pill: {
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  text: {
+    // Base text style, dynamic colors and weight applied via array syntax
+  },
+  textBold: {
+    fontWeight: 'bold',
+  },
+  textNormal: {
+    fontWeight: 'normal',
+  },
+});

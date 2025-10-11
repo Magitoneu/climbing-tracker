@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, StyleSheet } from 'react-native';
 import { colors } from '../../../shared/theme';
 
 const menuItems = [
@@ -11,10 +11,10 @@ const menuItems = [
 ];
 
 // Section stubs
-const ProfileSettings = () => <Text style={{ fontSize: 18 }}>Profile Settings</Text>;
-const NotificationSettings = () => <Text style={{ fontSize: 18 }}>Notification Settings</Text>;
-const GradeSystemSettings = () => <Text style={{ fontSize: 18 }}>Grade System Settings</Text>;
-const LanguageSettings = () => <Text style={{ fontSize: 18 }}>Language Settings</Text>;
+const ProfileSettings = () => <Text style={styles.sectionTitle}>Profile Settings</Text>;
+const NotificationSettings = () => <Text style={styles.sectionTitle}>Notification Settings</Text>;
+const GradeSystemSettings = () => <Text style={styles.sectionTitle}>Grade System Settings</Text>;
+const LanguageSettings = () => <Text style={styles.sectionTitle}>Language Settings</Text>;
 
 export default function SettingsScreen() {
   const [selected, setSelected] = useState('profile');
@@ -36,28 +36,23 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={{ flex: 1, flexDirection: 'row', backgroundColor: colors.background }}>
+    <View style={styles.container}>
       {/* Menu */}
-      <View style={{ width: '32%', backgroundColor: colors.surface, paddingVertical: 16 }}>
+      <View style={styles.menu}>
         {menuItems.map(item => (
           <TouchableOpacity
             key={item.key}
             onPress={() => handleSelect(item.key)}
-            style={{
-              padding: 16,
-              borderRadius: 8,
-              marginBottom: 8,
-              backgroundColor: selected === item.key ? colors.primary + '22' : 'transparent',
-            }}
+            style={[styles.menuItem, selected === item.key && styles.menuItemSelected]}
           >
-            <Text style={{ fontWeight: 'bold', color: selected === item.key ? colors.primary : colors.text }}>
+            <Text style={[styles.menuItemText, selected === item.key && styles.menuItemTextSelected]}>
               {item.label}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
       {/* Animated Content */}
-      <Animated.View style={{ flex: 1, padding: 24, opacity: fadeAnim }}>
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {selected === 'profile' && <ProfileSettings />}
         {selected === 'notifications' && <NotificationSettings />}
         {selected === 'grade' && <GradeSystemSettings />}
@@ -67,3 +62,39 @@ export default function SettingsScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.background,
+    flex: 1,
+    flexDirection: 'row',
+  },
+  content: {
+    flex: 1,
+    padding: 24,
+  },
+  menu: {
+    backgroundColor: colors.surface,
+    paddingVertical: 16,
+    width: '32%',
+  },
+  menuItem: {
+    backgroundColor: 'transparent',
+    borderRadius: 8,
+    marginBottom: 8,
+    padding: 16,
+  },
+  menuItemSelected: {
+    backgroundColor: colors.primary + '22',
+  },
+  menuItemText: {
+    color: colors.text,
+    fontWeight: 'bold',
+  },
+  menuItemTextSelected: {
+    color: colors.primary,
+  },
+  sectionTitle: {
+    fontSize: 18,
+  },
+});

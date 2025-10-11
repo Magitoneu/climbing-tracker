@@ -1,10 +1,24 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../../../shared/theme';
+
 export default function SettingsNotificationsScreen() {
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
-      <Text style={{ fontSize: 20, color: colors.text }}>Notification Settings</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Notification Settings</Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  title: {
+    color: colors.text,
+    fontSize: 20,
+  },
+});

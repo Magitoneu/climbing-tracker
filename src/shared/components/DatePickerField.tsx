@@ -30,16 +30,7 @@ export const DatePickerField: React.FC<Props> = ({ date, onChange, minimumDate, 
               onChange(d);
             }
           }}
-          style={{
-            width: '100%',
-            background: '#FFFFFF',
-            borderRadius: 12,
-            padding: 12,
-            border: '1px solid #E2E8F0',
-            fontSize: 16,
-            fontFamily: 'inherit',
-            color: '#0F172A',
-          }}
+          style={webInputStyle}
         />
       </View>
     );
@@ -67,6 +58,17 @@ export const DatePickerField: React.FC<Props> = ({ date, onChange, minimumDate, 
   );
 };
 
+const webInputStyle = {
+  width: '100%',
+  background: '#FFFFFF',
+  borderRadius: 12,
+  padding: 12,
+  border: '1px solid #E2E8F0',
+  fontSize: 16,
+  fontFamily: 'inherit',
+  color: '#0F172A',
+};
+
 const styles = StyleSheet.create({
   container: { marginBottom: 16 },
   label: { color: '#0F172A', fontWeight: '600', marginBottom: 4 },
@@ -79,7 +81,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   nativeButtonText: { color: '#0F172A', fontSize: 16, fontWeight: '600' },
-  // webInput removed: using inline style because React Native StyleSheet rejects CSS border string
+  // webInput uses separate object: React Native StyleSheet rejects CSS border string
 });
 
 export default DatePickerField;

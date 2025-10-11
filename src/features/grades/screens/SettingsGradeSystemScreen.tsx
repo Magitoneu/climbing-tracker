@@ -162,7 +162,7 @@ export default function SettingsGradeSystemScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Select Grade System</Text>
-            <ScrollView style={{ maxHeight: 300 }}>
+            <ScrollView style={styles.scrollView}>
               {allSystems.map(system => (
                 <TouchableOpacity
                   key={system.id}
@@ -183,7 +183,7 @@ export default function SettingsGradeSystemScreen() {
       {/* Editor Modal */}
       <Modal visible={showEditor} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { width: 360, maxWidth: '95%' }]}>
+          <View style={[styles.modalCard, styles.modalCardWide]}>
             <CustomGradeSystemEditor
               system={editing}
               onCancel={() => setShowEditor(false)}
@@ -244,9 +244,11 @@ const styles = StyleSheet.create({
   modalCancel: { backgroundColor: '#e5e7eb', borderRadius: 8, marginTop: 16, padding: 12 },
   modalCancelText: { fontSize: 16, fontWeight: '600', textAlign: 'center' },
   modalCard: { backgroundColor: '#fff', borderRadius: 12, maxWidth: '90%', padding: 24, width: 320 },
+  modalCardWide: { maxWidth: '95%', width: 360 },
   modalOption: { backgroundColor: '#f3f4f6', borderRadius: 8, marginBottom: 8, padding: 12 },
   modalOptionText: { fontSize: 16, fontWeight: '500' },
   modalOverlay: { alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)', flex: 1, justifyContent: 'center' },
   modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
+  scrollView: { maxHeight: 300 },
   sectionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
 });

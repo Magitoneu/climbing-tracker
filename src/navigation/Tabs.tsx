@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DashboardScreen } from '../features/dashboard';
@@ -10,9 +10,9 @@ const Tab = createBottomTabNavigator();
 
 function VisibleHeader({ title }: { title: string }) {
   return (
-    <SafeAreaView style={{ backgroundColor: colors.primary }} edges={['top']}>
-      <View style={{ padding: 16 }}>
-        <Text style={{ color: colors.surface, fontWeight: 'bold', fontSize: 20 }}>{title}</Text>
+    <SafeAreaView style={styles.headerContainer} edges={['top']}>
+      <View style={styles.headerInner}>
+        <Text style={styles.headerTitle}>{title}</Text>
       </View>
     </SafeAreaView>
   );
@@ -23,7 +23,7 @@ export default function Tabs() {
     <Tab.Navigator
       screenOptions={{
         header: ({ route }) => <VisibleHeader title={route.name} />,
-        tabBarStyle: { backgroundColor: colors.background, borderTopColor: colors.border },
+        tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.text,
       }}
@@ -36,3 +36,21 @@ export default function Tabs() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  headerContainer: {
+    backgroundColor: colors.primary,
+  },
+  headerInner: {
+    padding: 16,
+  },
+  headerTitle: {
+    color: colors.surface,
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  tabBar: {
+    backgroundColor: colors.background,
+    borderTopColor: colors.border,
+  },
+});

@@ -7,6 +7,7 @@ import type { Boulder } from '../models/Boulder';
 import { getGradeSystem } from '../../grades/services/gradeSystemService';
 import { colors } from '../../../shared/theme';
 import BoulderList from './BoulderList';
+import { styles } from './SessionEditModal.styles';
 
 interface SessionEditModalProps {
   visible: boolean;
@@ -29,63 +30,36 @@ const SessionEditModal: React.FC<SessionEditModalProps> = ({
 }) => {
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onCancel}>
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.15)', justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.modalOverlay}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ width: '90%', maxHeight: '90%' }}
+          style={styles.keyboardAvoidingView}
         >
-          <View
-            style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 24, width: '100%', maxHeight: '100%' }}
-          >
+          <View style={styles.container}>
             <ScrollView>
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.primary, marginBottom: 16 }}>
-                Edit Session
-              </Text>
+              <Text style={styles.title}>Edit Session</Text>
               {session && (
                 <>
-                  <Text style={{ fontSize: 14, color: colors.text, marginBottom: 4 }}>Date</Text>
+                  <Text style={styles.label}>Date</Text>
                   <TextInput
-                    style={{
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      borderRadius: 8,
-                      padding: 8,
-                      marginBottom: 12,
-                      color: colors.text,
-                    }}
+                    style={styles.textInput}
                     value={session.date}
                     onChangeText={val => onChange({ ...session, date: val })}
                   />
-                  <Text style={{ fontSize: 14, color: colors.text, marginBottom: 4 }}>Duration (min)</Text>
+                  <Text style={styles.label}>Duration (min)</Text>
                   <TextInput
-                    style={{
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      borderRadius: 8,
-                      padding: 8,
-                      marginBottom: 12,
-                      color: colors.text,
-                    }}
+                    style={styles.textInput}
                     value={String(session.durationMinutes ?? '')}
                     keyboardType="numeric"
                     onChangeText={val => onChange({ ...session, durationMinutes: Number(val.replace(/[^0-9]/g, '')) })}
                   />
-                  <Text style={{ fontSize: 14, color: colors.text, marginBottom: 4 }}>Notes</Text>
+                  <Text style={styles.label}>Notes</Text>
                   <TextInput
-                    style={{
-                      borderWidth: 1,
-                      borderColor: colors.border,
-                      borderRadius: 8,
-                      padding: 8,
-                      marginBottom: 12,
-                      color: colors.text,
-                    }}
+                    style={styles.textInput}
                     value={session.notes}
                     onChangeText={val => onChange({ ...session, notes: val })}
                   />
-                  <Text style={{ fontSize: 15, fontWeight: 'bold', color: colors.primary, marginBottom: 8 }}>
-                    Boulders
-                  </Text>
+                  <Text style={styles.bouldersTitle}>Boulders</Text>
                   <BoulderList
                     boulders={session.boulders ?? []}
                     gradeSystem={typeof session.gradeSystem === 'string' ? session.gradeSystem : 'V'}
@@ -94,14 +68,7 @@ const SessionEditModal: React.FC<SessionEditModalProps> = ({
                     onChange={(boulders: Boulder[]) => onChange({ ...session, boulders })}
                   />
                   <TouchableOpacity
-                    style={{
-                      backgroundColor: colors.primary,
-                      borderRadius: 8,
-                      paddingVertical: 6,
-                      paddingHorizontal: 16,
-                      alignSelf: 'flex-start',
-                      marginBottom: 12,
-                    }}
+                    style={styles.addBoulderButton}
                     onPress={() => {
                       const updated = Array.isArray(session.boulders) ? [...session.boulders] : [];
                       const sys = getGradeSystem(
@@ -116,31 +83,14 @@ const SessionEditModal: React.FC<SessionEditModalProps> = ({
                       onChange({ ...session, boulders: updated });
                     }}
                   >
-                    <Text style={{ color: colors.surface, fontWeight: 'bold' }}>Add Boulder</Text>
+                    <Text style={styles.buttonText}>Add Boulder</Text>
                   </TouchableOpacity>
-                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 }}>
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: colors.error,
-                        borderRadius: 8,
-                        paddingVertical: 8,
-                        paddingHorizontal: 18,
-                        marginRight: 8,
-                      }}
-                      onPress={onCancel}
-                    >
-                      <Text style={{ color: colors.surface, fontWeight: 'bold' }}>Cancel</Text>
+                  <View style={styles.actionRow}>
+                    <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+                      <Text style={styles.buttonText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                      style={{
-                        backgroundColor: colors.primary,
-                        borderRadius: 8,
-                        paddingVertical: 8,
-                        paddingHorizontal: 18,
-                      }}
-                      onPress={onSave}
-                    >
-                      <Text style={{ color: colors.surface, fontWeight: 'bold' }}>Save</Text>
+                    <TouchableOpacity style={styles.saveButton} onPress={onSave}>
+                      <Text style={styles.buttonText}>Save</Text>
                     </TouchableOpacity>
                   </View>
                 </>

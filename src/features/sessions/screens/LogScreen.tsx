@@ -149,9 +149,9 @@ export default function LogScreen() {
   const normalizedSystemId = gradeSystem === 'V' ? 'vscale' : gradeSystem === 'Font' ? 'font' : (gradeSystem as string);
   const stats = buildSessionStats(boulders, gradeSystem);
   return (
-    <View style={{ flex: 1, backgroundColor: '#F1F5F9' }}>
+    <View style={styles.screenContainer}>
       <KeyboardAwareScrollView
-        contentContainerStyle={{ paddingBottom: 32, flexGrow: 1, paddingHorizontal: 16, paddingTop: 16 }}
+        contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
         enableOnAndroid={true}
         enableAutomaticScroll={true}
@@ -166,18 +166,9 @@ export default function LogScreen() {
           <StatCardCarousel stats={stats} />
         </SessionHeaderCard>
         <DatePickerField date={dateObj} onChange={handleDateChange} maximumDate={new Date()} label="Date" />
-        <Text style={{ fontWeight: '600', marginBottom: 4, color: '#0F172A' }}>Session Duration (minutes)</Text>
+        <Text style={styles.sectionLabel}>Session Duration (minutes)</Text>
         <TextInput
-          style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: 12,
-            paddingHorizontal: 14,
-            paddingVertical: 12,
-            fontSize: 16,
-            borderWidth: 1,
-            borderColor: '#E2E8F0',
-            marginBottom: 16,
-          }}
+          style={styles.durationInput}
           value={duration}
           onChangeText={setDuration}
           placeholder="e.g. 90"
@@ -192,28 +183,16 @@ export default function LogScreen() {
         />
 
         {systems.length <= 2 && (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Settings')}
-            style={{ alignSelf: 'flex-start', marginBottom: 8 }}
-          >
-            <Text style={{ color: colors.primary, fontWeight: '600' }}>Manage grade systems</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.manageSystemsButton}>
+            <Text style={styles.manageSystemsText}>Manage grade systems</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity
-          onPress={openAddBoulder}
-          style={{
-            backgroundColor: '#2563EB',
-            paddingVertical: 14,
-            borderRadius: 14,
-            alignItems: 'center',
-            marginBottom: 12,
-          }}
-        >
-          <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 16 }}>Add Boulder</Text>
+        <TouchableOpacity onPress={openAddBoulder} style={styles.addBoulderButton}>
+          <Text style={styles.addBoulderText}>Add Boulder</Text>
         </TouchableOpacity>
-        <View style={{ flexWrap: 'wrap', flexDirection: 'row', marginTop: 4, justifyContent: 'flex-start' }}>
+        <View style={styles.bouldersContainer}>
           {Object.entries(gradeSummary).length === 0 ? (
-            <Text style={{ color: '#888', marginVertical: 8 }}>No boulders added yet.</Text>
+            <Text style={styles.emptyText}>No boulders added yet.</Text>
           ) : (
             (() => {
               const gradeOrder = gradeSystem === 'V' ? V_GRADES : FONT_GRADES;
@@ -244,26 +223,14 @@ export default function LogScreen() {
             })()
           )}
         </View>
-        <Text style={{ fontWeight: '600', marginTop: 16, marginBottom: 4, color: '#0F172A' }}>Logged Boulders</Text>
-        {boulders.length === 0 && (
-          <Text style={{ color: '#64748B', marginBottom: 8 }}>None yet. Tap &quot;Add Boulder&quot;.</Text>
-        )}
+        <Text style={styles.loggedBouldersLabel}>Logged Boulders</Text>
+        {boulders.length === 0 && <Text style={styles.emptyLoggedText}>None yet. Tap &quot;Add Boulder&quot;.</Text>}
         {boulders.map((b, i) => (
           <BoulderCard key={i} attempt={b} index={i} onDelete={removeBoulder} systemId={normalizedSystemId} />
         ))}
-        <Text style={{ fontWeight: '600', marginTop: 16, marginBottom: 4, color: '#0F172A' }}>Notes</Text>
+        <Text style={styles.notesLabel}>Notes</Text>
         <TextInput
-          style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: 12,
-            paddingHorizontal: 14,
-            paddingVertical: 12,
-            fontSize: 15,
-            borderWidth: 1,
-            borderColor: '#E2E8F0',
-            height: 80,
-            textAlignVertical: 'top',
-          }}
+          style={styles.notesInput}
           value={notes}
           onChangeText={setNotes}
           placeholder="Session notes (optional)"
@@ -271,15 +238,7 @@ export default function LogScreen() {
           placeholderTextColor={colors.text}
         />
         <TouchableOpacity
-          style={{
-            backgroundColor: '#0F172A',
-            paddingVertical: 16,
-            borderRadius: 16,
-            alignItems: 'center',
-            marginTop: 28,
-            marginBottom: 12,
-            opacity: saving ? 0.7 : 1,
-          }}
+          style={[styles.saveButton, saving && styles.saveButtonDisabled]}
           disabled={saving}
           onPress={async () => {
             if (saving) return;
@@ -344,15 +303,9 @@ export default function LogScreen() {
             setDateObj(new Date());
           }}
         >
-          <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 16 }}>
-            {saving ? 'Saving...' : 'Save Session'}
-          </Text>
+          <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save Session'}</Text>
         </TouchableOpacity>
-        {lastError && (
-          <Text style={{ color: colors.error, fontSize: 12, marginTop: -4, marginBottom: 12 }}>
-            Last cloud error: {lastError}
-          </Text>
-        )}
+        {lastError && <Text style={styles.errorText}>Last cloud error: {lastError}</Text>}
       </KeyboardAwareScrollView>
       <BoulderModal
         visible={modalVisible}
