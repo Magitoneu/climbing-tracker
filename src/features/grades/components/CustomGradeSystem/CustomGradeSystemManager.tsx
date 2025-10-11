@@ -10,10 +10,10 @@ interface CustomGradeSystemManagerProps {
 }
 
 export const CustomGradeSystemManager: React.FC<CustomGradeSystemManagerProps> = ({
-  systems,
-  onCreate,
-  onEdit,
-  onDelete,
+  systems: _systems,
+  onCreate: _onCreate,
+  onEdit: _onEdit,
+  onDelete: _onDelete,
 }) => {
   // ...UI for listing, creating, editing, deleting grade systems...
   return <div>{/* List grade systems, create/edit/delete buttons */}</div>;

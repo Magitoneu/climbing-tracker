@@ -64,7 +64,9 @@ export default function LogScreen() {
         if (!last) return;
         if (last === 'V' || last === 'Font') setGradeSystem(last);
         else setGradeSystem(last as GradeSystem);
-      } catch {}
+      } catch {
+        // Silently fail to load last grade system - will use default 'V'
+      }
     })();
     return () => {
       mounted = false;
@@ -78,7 +80,9 @@ export default function LogScreen() {
       (async () => {
         try {
           await loadAndRegisterAllCustomSystems();
-        } catch {}
+        } catch {
+          // Silently fail to load custom systems - will use builtin systems only
+        }
         if (!cancelled) setSystems(getAllGradeSystems());
       })();
       return () => {
@@ -242,7 +246,7 @@ export default function LogScreen() {
         </View>
         <Text style={{ fontWeight: '600', marginTop: 16, marginBottom: 4, color: '#0F172A' }}>Logged Boulders</Text>
         {boulders.length === 0 && (
-          <Text style={{ color: '#64748B', marginBottom: 8 }}>None yet. Tap "Add Boulder".</Text>
+          <Text style={{ color: '#64748B', marginBottom: 8 }}>None yet. Tap &quot;Add Boulder&quot;.</Text>
         )}
         {boulders.map((b, i) => (
           <BoulderCard key={i} attempt={b} index={i} onDelete={removeBoulder} systemId={normalizedSystemId} />
@@ -303,7 +307,9 @@ export default function LogScreen() {
             };
             try {
               await store.setItem('lastLoggingGradeSystem', gradeSystem as string);
-            } catch {}
+            } catch {
+              // Non-critical: silently fail to persist grade system preference
+            }
             setSaving(true);
             try {
               await addSession(session as any);

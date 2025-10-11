@@ -17,18 +17,76 @@ pnpm run ios              # Launch iOS simulator (Mac only)
 pnpm run android          # Launch Android emulator
 ```
 
+### Quality Assurance Commands
+```bash
+pnpm typecheck            # TypeScript type checking
+pnpm lint                 # Run ESLint
+pnpm lint:fix             # Auto-fix ESLint issues
+pnpm format               # Format code with Prettier
+pnpm format:check         # Check code formatting
+pnpm test                 # Run Jest tests
+pnpm test:watch           # Run tests in watch mode
+pnpm test:coverage        # Generate coverage report
+```
+
 ### Important Notes
 - **Package Manager:** This project uses **pnpm** exclusively (not npm/yarn)
 - **Web Development:** Use `pnpm run web` for quickest iteration; open http://localhost:8081 in browser
 - **TypeScript:** Strict mode enabled (`tsconfig.json`)
-- **No Test Suite:** Tests are not yet implemented (see TODOs.md)
-- **No Linter:** ESLint/Prettier not yet configured
+- **Testing:** Jest with React Native Testing Library (20 tests currently)
+- **Code Quality:** ESLint + Prettier configured with pre-commit hooks (Husky)
 
 ## Architecture & Data Flow
 
+### Feature-Based Architecture
+
+The codebase follows a **feature-based structure** for better maintainability and scalability:
+
+```
+src/
+  features/               # Feature modules (self-contained)
+    auth/                 # Authentication
+      screens/
+      index.ts            # Barrel export
+    dashboard/            # Dashboard screen
+    stats/                # Statistics screen
+    grades/               # Grade system management
+      screens/            # SettingsGradeSystemScreen
+      components/         # CustomGradeSystem components, GradeSelector
+      models/             # grades, gradeConversion, GradeSystem, CustomGradeSystem
+      services/           # gradeSystemService, customGradeSystemService
+      hooks/              # useGradeDisplaySystem
+      utils/              # gradeSnapshot
+      index.ts
+    sessions/             # Session logging & management
+      screens/            # LogScreen, SessionsScreen
+      components/         # Boulder components, SessionEditModal, log/*
+      models/             # Session, Boulder
+      services/           # sessionService
+      utils/              # sessionStats, boulderUtils
+      index.ts
+    settings/             # Settings screens
+      screens/            # Settings*, SettingsStack
+      index.ts
+  shared/                 # Shared resources
+    components/           # DatePickerField, NumberInput, FlashedToggle
+    hooks/                # useMigrateLocalSessions
+    utils/                # alert
+    theme.ts
+    index.ts
+  config/                 # Firebase configuration
+  navigation/             # Tab navigation
+  storage/                # AsyncStorage wrappers
+```
+
+**Import Patterns:**
+- **Within feature**: Relative imports (`../models/Session`)
+- **Cross-feature**: Feature barrel (`../../grades`, `../../sessions`)
+- **Shared**: Shared barrel (`../../../shared`)
+
 ### Authentication Flow
 1. **Entry Point:** `App.tsx` monitors `onAuthStateChanged` from Firebase Auth
-2. **Unauthenticated:** Shows `AuthScreen` (email/password + Google OAuth via `expo-auth-session`)
+2. **Unauthenticated:** Shows `AuthScreen` from `src/features/auth/`
 3. **Authenticated:** Renders `Tabs` navigator with 5 main tabs
 4. **On Login:**
    - Loads and registers custom grade systems from AsyncStorage
@@ -38,15 +96,15 @@ pnpm run android          # Launch Android emulator
 ### Navigation Structure
 - **Root:** `NavigationContainer` (React Navigation)
   - **Tabs:** Bottom tab navigator (`src/navigation/Tabs.tsx`)
-    - Dashboard: Goals and overview (placeholder)
-    - Log: Add new climbing sessions (`LogScreen`)
-    - Sessions: View/edit past sessions (`SessionsScreen`)
-    - Stats: Progress charts (placeholder)
-    - Settings: Nested stack navigator (`SettingsStack`)
+    - Dashboard: Goals and overview (`src/features/dashboard/`)
+    - Log: Add new climbing sessions (`src/features/sessions/screens/LogScreen.tsx`)
+    - Sessions: View/edit past sessions (`src/features/sessions/screens/SessionsScreen.tsx`)
+    - Stats: Progress charts (`src/features/stats/`)
+    - Settings: Nested stack navigator (`src/features/settings/screens/SettingsStack.tsx`)
 
 ### Core Data Models
 
-#### Session (`src/models/Session.ts`)
+#### Session (`src/features/sessions/models/Session.ts`)
 ```typescript
 interface Session {
   id?: string;          // Firestore doc ID
@@ -63,7 +121,7 @@ interface Session {
 }
 ```
 
-#### Boulder (`src/models/Boulder.ts`)
+#### Boulder (`src/features/sessions/models/Boulder.ts`)
 ```typescript
 interface Boulder {
   grade: string;                      // Legacy label (e.g., 'V5')
@@ -78,14 +136,14 @@ interface Boulder {
 
 **Multi-Phase Canonical Grade System** (see TODOs.md for full roadmap):
 
-1. **Builtin Systems:** V-Scale and Font grading (defined in `src/models/gradeConversion.ts`)
+1. **Builtin Systems:** V-Scale and Font grading (defined in `src/features/grades/models/gradeConversion.ts`)
    - Each grade maps to a `canonicalValue` (integer 0-18) representing difficulty
    - Conversions between systems use canonical mapping table
 
 2. **Custom Systems:** Users can create gym-specific color-based systems
    - Stored in Firestore: `users/{uid}/customGradeSystems/{id}`
    - Local cache in AsyncStorage (`customGradeSystems` key)
-   - Managed via `src/services/customGradeSystemService.ts`
+   - Managed via `src/features/grades/services/customGradeSystemService.ts`
    - Registry pattern: `registerGradeSystem()` adds to runtime lookup
 
 3. **Snapshot Enrichment:** New/legacy sessions enriched with canonical data
@@ -96,7 +154,7 @@ interface Boulder {
 4. **Display vs Logging Systems:**
    - **Logging System:** Selected per-session in LogScreen (persisted in `lastLoggingGradeSystem`)
    - **Display System:** User preference for viewing all sessions (stored in `displayGradeSystemId`)
-   - `useGradeDisplaySystem` hook provides conversion helpers
+   - `useGradeDisplaySystem` hook (in `src/features/grades/hooks/`) provides conversion helpers
 
 ### Firebase Integration
 
@@ -111,13 +169,13 @@ users/
 ```
 
 **Services:**
-- `src/services/sessionService.ts`: CRUD for sessions + live subscriptions
-- `src/services/gradeSystemService.ts`: Registry for builtin + custom systems
-- `src/services/customGradeSystemService.ts`: Firestore sync for custom systems
+- `src/features/sessions/services/sessionService.ts`: CRUD for sessions + live subscriptions
+- `src/features/grades/services/gradeSystemService.ts`: Registry for builtin + custom systems
+- `src/features/grades/services/customGradeSystemService.ts`: Firestore sync for custom systems
 
 **Offline Handling:**
 - LogScreen catches Firestore errors and falls back to AsyncStorage (`simpleStore`)
-- On next login, `useMigrateLocalSessions` pushes local data to cloud
+- On next login, `useMigrateLocalSessions` (in `src/shared/hooks/`) pushes local data to cloud
 
 ### Storage Layers
 
@@ -129,10 +187,16 @@ users/
 
 ### Key Utilities
 
-- `src/utils/gradeSnapshot.ts`: Builds canonical snapshots for boulders/attempts
-- `src/utils/sessionStats.ts`: Calculates total sends, flash rate, volume for stat cards
-- `src/utils/boulderUtils.ts`: Aggregates boulders by grade, sorts, finds max grade
-- `src/utils/alert.ts`: Cross-platform alert wrapper (uses `Alert` on native, `window.alert` on web)
+**Grades Feature:**
+- `src/features/grades/utils/gradeSnapshot.ts`: Builds canonical snapshots for boulders/attempts
+
+**Sessions Feature:**
+- `src/features/sessions/utils/sessionStats.ts`: Calculates total sends, flash rate, volume for stat cards
+- `src/features/sessions/utils/boulderUtils.ts`: Aggregates boulders by grade, sorts, finds max grade
+
+**Shared:**
+- `src/shared/utils/alert.ts`: Cross-platform alert wrapper (uses `Alert` on native, `window.alert` on web)
+- `src/shared/theme.ts`: Color palette and theme constants
 
 ## Git Workflow
 
@@ -185,7 +249,8 @@ git commit -m "feat(grades)!: migrate to canonical grade system"
 - **Functional Components:** Use hooks (no class components except error boundaries)
 - **Long, clear names over short, vague names** (e.g., `useGradeDisplaySystem` not `useGrade`)
 - **Co-locate logic that changes together**
-- **Group by feature, not by type** (e.g., `src/components/log/` for log-specific UI)
+- **Feature-based organization:** Group by feature, not by file type
+- **Barrel Exports:** Each feature has an `index.ts` exporting its public API
 - **One function = one level of abstraction**
 - **Favor pure functions** for testability
 
@@ -202,25 +267,33 @@ git commit -m "feat(grades)!: migrate to canonical grade system"
 
 ### Styling
 - Inline `StyleSheet.create` or separate `.styles.ts` files
-- Color constants defined in `src/theme.ts`
+- Color constants defined in `src/shared/theme.ts`
 - No CSS-in-JS library; uses React Native StyleSheet API
 
 ## Common Workflows
 
-### Adding a New Screen
-1. Create screen component in `src/screens/`
-2. Add route to `Tabs.tsx` or `SettingsStack.tsx`
-3. Follow naming convention: `{Feature}Screen.tsx`
+### Adding a New Feature
+1. Create feature folder: `src/features/{feature-name}/`
+2. Add subdirectories as needed: `screens/`, `components/`, `models/`, `services/`, `utils/`, `hooks/`
+3. Create `index.ts` barrel export with public API
+4. Follow naming convention: `{Feature}Screen.tsx` for screens
+5. Import from other features using barrel: `import { Something } from '../../other-feature'`
+
+### Adding a New Screen to Existing Feature
+1. Create screen in appropriate feature's `screens/` folder
+2. Export from feature's `index.ts`
+3. Add route to `src/navigation/Tabs.tsx` or `src/features/settings/screens/SettingsStack.tsx`
+4. Import from feature barrel in navigation file
 
 ### Extending Grade Systems
-1. **Builtin:** Add to `CANONICAL_TABLE` in `src/models/gradeConversion.ts`
-2. **Custom:** Use `CustomGradeSystemEditor` component (already in Settings)
+1. **Builtin:** Add to `CANONICAL_TABLE` in `src/features/grades/models/gradeConversion.ts`
+2. **Custom:** Use `CustomGradeSystemEditor` component (in `src/features/grades/components/`)
 3. **Registry:** Call `registerGradeSystem()` to add to runtime lookup
 
 ### Working with Sessions
-- **Add:** Call `addSession()` from `sessionService` (auto-enriches with canonical data)
+- **Add:** Import and call `addSession()` from `src/features/sessions` (auto-enriches with canonical data)
 - **Subscribe:** Use `subscribeToSessions()` for live updates
-- **Edit:** Call `updateSession(id, partial)` (available in `SessionsScreen`)
+- **Edit:** Call `updateSession(id, partial)` (available in SessionsScreen)
 - **Delete:** Call `deleteSession(id)`
 
 ### Testing Offline Mode
@@ -233,8 +306,8 @@ git commit -m "feat(grades)!: migrate to canonical grade system"
 
 ## Known Limitations & TODOs
 
-- **No Tests:** Unit/integration tests planned (see TODOs.md)
-- **No Linting:** ESLint/Prettier configuration needed
+- **Limited Test Coverage:** 20 tests currently (primarily utils); need more component/integration tests
+- **Pre-existing Lint Issues:** 287 lint warnings/errors to be addressed in Phase 3-4 refactoring
 - **Stats Placeholder:** StatsScreen and DashboardScreen not fully implemented
 - **Google OAuth in Expo Go:** Unreliable on native; production OAuth clients needed for standalone builds
 - **No Backfill:** Existing Firestore sessions lack canonical values until next edit/view (enriched on-the-fly)
@@ -262,6 +335,21 @@ match /users/{userId} {
 - **README.md:** User-facing setup instructions and troubleshooting
 - **.github/copilot-instructions.md:** Detailed code style guidelines
 - **package.json:** Scripts and dependency versions
+- **CLAUDE.md:** This file - architecture guide and development workflows
+
+## Testing
+
+The project uses **Jest** with **React Native Testing Library**:
+
+- **Test Location:** `__tests__/` directory (mirrors `src/` structure)
+- **Current Coverage:** Utility functions (gradeConversion, sessionStats)
+- **Run Tests:** `pnpm test`
+- **Watch Mode:** `pnpm test:watch`
+- **Coverage:** `pnpm test:coverage`
+
+**Test Files:**
+- `__tests__/utils/gradeConversion.test.ts` - Grade conversion and canonical value tests
+- `__tests__/utils/sessionStats.test.ts` - Session statistics calculation tests
 
 ## Debug Tips
 

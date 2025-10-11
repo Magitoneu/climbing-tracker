@@ -1,5 +1,6 @@
 // src/storage/simpleStore.ts
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Use AsyncStorage for native, localStorage for web
 let storage: {
@@ -14,23 +15,26 @@ if (Platform.OS === 'web') {
       try {
         return Promise.resolve(window.localStorage.getItem(key));
       } catch {
+        // Intentionally silencing localStorage errors (e.g., quota exceeded, privacy mode)
         return null;
       }
     },
     setItem: async (key, value) => {
       try {
         window.localStorage.setItem(key, value);
-      } catch {}
+      } catch {
+        // Intentionally silencing localStorage errors (e.g., quota exceeded, privacy mode)
+      }
     },
     removeItem: async key => {
       try {
         window.localStorage.removeItem(key);
-      } catch {}
+      } catch {
+        // Intentionally silencing localStorage errors
+      }
     },
   };
 } else {
-  // @ts-ignore
-  const AsyncStorage = require('@react-native-async-storage/async-storage').default;
   storage = {
     getItem: AsyncStorage.getItem,
     setItem: AsyncStorage.setItem,

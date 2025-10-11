@@ -1,5 +1,4 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import Tabs from './src/navigation/Tabs';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -28,11 +27,15 @@ export default function App() {
           // Ensure local is registered and seed cloud if needed
           await loadAndRegisterAllCustomSystems();
           await pushLocalCustomGradeSystemsToCloud();
-        } catch {}
+        } catch {
+          // Intentionally silencing errors - grade system loading is optional
+        }
         // Live subscribe to cloud updates
         try {
           unsubscribeCustom = subscribeCustomGradeSystems();
-        } catch {}
+        } catch {
+          // Intentionally silencing errors - subscription is optional
+        }
       } else if (unsubscribeCustom) {
         unsubscribeCustom();
         unsubscribeCustom = null;
@@ -49,16 +52,20 @@ export default function App() {
     (async () => {
       try {
         await loadAndRegisterAllCustomSystems();
-      } catch {}
+      } catch {
+        // Intentionally silencing errors - grade system loading is optional
+      }
     })();
   }, []);
 
   // Run one-time migration once authenticated
   const { migrated, added, error } = useMigrateLocalSessions(isAuthenticated);
-  if (error) {
-    console.warn('[Migration] Error:', error);
-  } else if (migrated && added > 0) {
-    console.log(`[Migration] Uploaded ${added} legacy local sessions.`);
+  if (__DEV__) {
+    if (error) {
+      console.warn('[Migration] Error:', error);
+    } else if (migrated && added > 0) {
+      console.log(`[Migration] Uploaded ${added} legacy local sessions.`);
+    }
   }
 
   if (loading) return null; // Optionally show a splash screen
@@ -72,5 +79,3 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({});

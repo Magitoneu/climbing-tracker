@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -23,11 +23,19 @@ export const GradeSystemBar: React.FC<Props> = ({ systems, activeId, onChange, v
   const { width } = useWindowDimensions();
   // If very wide screen, constrain max visible pill width so they don't stretch visually.
   const maxPillWidth = Math.min(140, Math.max(110, width / 5));
-  // Animated scale per pill keyed by id
-  const scales = useRef(new Map<string, Animated.Value>()).current;
-  systems.forEach(s => {
-    if (!scales.get(s.id)) scales.set(s.id, new Animated.Value(1));
-  });
+  // Animated scale per pill keyed by id - use useState for mutable map
+  const [scalesMap] = useState(() => new Map<string, Animated.Value>());
+
+  // Initialize scales for new systems
+  const scales = useMemo(() => {
+    systems.forEach(s => {
+      if (!scalesMap.get(s.id)) {
+        scalesMap.set(s.id, new Animated.Value(1));
+      }
+    });
+    return scalesMap;
+  }, [systems, scalesMap]);
+
   useEffect(() => {
     scales.forEach((val, id) => {
       Animated.spring(val, {

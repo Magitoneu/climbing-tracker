@@ -66,7 +66,9 @@ export async function upsertCustomSystem(custom: CustomGradeSystem): Promise<str
       const ref = doc(collection(db, 'users', user.uid, 'gradeSystems'), id);
       await setDoc(ref, payload, { merge: true });
     }
-  } catch {}
+  } catch {
+    // Silently fail cloud sync - system is saved locally and will sync when online
+  }
   return id;
 }
 
@@ -81,7 +83,9 @@ export async function removeCustomSystem(id: string): Promise<void> {
       const ref = doc(collection(db, 'users', user.uid, 'gradeSystems'), id);
       await deleteDoc(ref);
     }
-  } catch {}
+  } catch {
+    // Silently fail cloud delete - system is removed locally and will sync when online
+  }
 }
 
 export function isUserSystem(id: string): boolean {
@@ -131,6 +135,8 @@ export async function pushLocalCustomGradeSystemsToCloud() {
     try {
       const ref = doc(collection(db, 'users', user.uid, 'gradeSystems'), id);
       await setDoc(ref, { ...cs, id }, { merge: true });
-    } catch {}
+    } catch {
+      // Silently skip failed cloud upload - system remains in local cache
+    }
   }
 }
