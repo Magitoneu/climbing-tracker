@@ -4,6 +4,7 @@
 **Prerequisites**: plan.md (required), research.md, data-model.md, contracts/
 
 ## Execution Flow (main)
+
 ```
 1. Load plan.md from feature directory
 2. Load optional design documents: data-model.md, contracts/, research.md, quickstart.md
@@ -78,6 +79,7 @@ T029 [P] Write integration test for setting and tracking goals
 ---
 
 ## Polish Tasks [P]
+
 T030 [P] Write unit tests for all models and services
 T031 [P] Optimize performance for mobile and desktop (target 60 FPS)
 T032 [P] Update documentation in `/docs` and quickstart.md
@@ -85,12 +87,14 @@ T033 [P] Validate accessibility and cross-platform compatibility
 T034 [P] Final code review and refactor for maintainability
 
 ## UI Tasks
+
 T035 Design and implement Stats screen (charts, progress analysis)
 T036 Design and implement Dashboard screen (overview, quick stats, recent activity)
 
 ---
 
 ## Cloud Sync & User Accounts Tasks
+
 TCS1 ✅ Research and choose a backend/cloud solution (Firebase recommended for Expo) — completed
 TCS2 ✅ Set up Firebase project and enable Authentication and Firestore — completed
 TCS3 ✅ Install Firebase SDK for Expo: `pnpm add firebase` — completed
@@ -116,12 +120,14 @@ TCS14 Analytics/telemetry (optional) for feature usage.
 ---
 
 ## Parallel Execution Guidance
+
 - Tasks marked [P] can be executed in parallel (different files, no dependencies)
 - Example: T005-T009 (contract tests), T010-T014 (models), T026-T029 (integration tests), T030-T034 (polish)
 - Core service and endpoint tasks (T017-T019) should follow after models and contract tests
 - UI tasks (T035-T036) can be started after core data and service logic is available
 
 ## Dependency Notes
+
 - Setup tasks (T001-T004) must be completed first
 - Contract tests (T005-T009) before endpoint implementation (T017-T019)
 - Models (T010-T014) before services/endpoints

@@ -10,14 +10,22 @@ let storage: {
 
 if (Platform.OS === 'web') {
   storage = {
-    getItem: async (key) => {
-      try { return Promise.resolve(window.localStorage.getItem(key)); } catch { return null; }
+    getItem: async key => {
+      try {
+        return Promise.resolve(window.localStorage.getItem(key));
+      } catch {
+        return null;
+      }
     },
     setItem: async (key, value) => {
-      try { window.localStorage.setItem(key, value); } catch {}
+      try {
+        window.localStorage.setItem(key, value);
+      } catch {}
     },
-    removeItem: async (key) => {
-      try { window.localStorage.removeItem(key); } catch {}
+    removeItem: async key => {
+      try {
+        window.localStorage.removeItem(key);
+      } catch {}
     },
   };
 } else {
