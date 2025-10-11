@@ -1,3 +1,23 @@
+/**
+ * Climbing Tracker Theme - Legacy Compatibility Layer
+ *
+ * This file maintains backward compatibility with existing components
+ * while gradually migrating to the new climbing-inspired design system.
+ *
+ * For new components, import from:
+ * - @/shared/design/theme (colors)
+ * - @/shared/design/typography (typography)
+ * - @/shared/design/spacing (spacing)
+ */
+
+// Import new climbing design system
+import { colors as climbingColors, primary, accent, chalk, shadows } from './design/theme';
+import { typography } from './design/typography';
+import { spacing } from './design/spacing';
+
+// ============================================================================
+// GRADE COLORS - Keep existing grade color palette
+// ============================================================================
 export const gradeColors: Record<string, string> = {
   VB: '#B3E5FC',
   '3–4': '#B3E5FC',
@@ -38,71 +58,111 @@ export const gradeColors: Record<string, string> = {
   V17: '#6D4C41',
   '9A': '#6D4C41',
 };
-// src/theme.ts
+
+// ============================================================================
+// COLORS - Updated with climbing theme
+// ============================================================================
 export const colors = {
-  primary: '#2563eb', // vivid purple
-  accent: '#FF6F3C', // orange
-  background: '#F5F6FA', // off-white
-  surface: '#FFFFFF',
-  text: '#22223B', // deep blue
-  error: '#FF3B30',
-  border: '#E5EAF2',
-  chipSelected: '#6C63FF',
-  chipUnselected: '#FFFFFF',
-  chipBorder: '#6C63FF',
+  // Primary colors - Climbing-inspired orange/amber
+  primary: climbingColors.primary, // #FFA726 - Sandstone sunset
+  primaryLight: primary[300], // Lighter sandstone
+  primaryDark: primary[700], // Deep orange
+
+  // Accent
+  accent: climbingColors.accent, // #FF6F3C - Send energy
+
+  // Backgrounds - Chalk inspired
+  background: chalk.dust, // #F5F5F5 - Chalk dust
+  surface: chalk.white, // #FAFAFA - Fresh chalk
+
+  // Text
+  text: climbingColors.text, // #22223B - Deep blue-gray
+  textSecondary: climbingColors.textSecondary, // #64748B
+  textInverse: climbingColors.textInverse, // #FFFFFF
+
+  // States
+  error: climbingColors.error, // #E53935
+  success: climbingColors.success, // #43A047
+  warning: climbingColors.warning, // #FF9800
+  info: climbingColors.info, // #2196F3
+
+  // UI
+  border: climbingColors.border, // #E5EAF2
+  divider: climbingColors.divider, // #E2E8F0
+
+  // Climbing-specific
+  flash: accent.flash, // #FBC02D - Gold for flashes
+  send: accent.send, // #FF6F3C - Send completion
+  fire: accent.fire, // #FF5722 - Hot streak
+
+  // Legacy compatibility
+  chipSelected: primary[500],
+  chipUnselected: chalk.white,
+  chipBorder: primary[500],
   tabInactive: '#A0A3BD',
-  flash: '#ffc400ff', // gold/yellow for flash
 };
 
+// ============================================================================
+// BUTTON STYLES - Updated with climbing theme
+// ============================================================================
 export const buttonStyle = {
   backgroundColor: colors.primary,
-  borderRadius: 32,
-  paddingVertical: 16,
-  paddingHorizontal: 32,
-  alignItems: 'center',
-  shadowColor: colors.primary,
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.15,
-  shadowRadius: 8,
-  elevation: 3,
+  borderRadius: 12, // Less round, more climbing-hold-like
+  paddingVertical: spacing.md,
+  paddingHorizontal: spacing.lg,
+  alignItems: 'center' as const,
+  ...shadows.md,
 };
 
 export const buttonText = {
-  color: '#fff',
-  fontWeight: '700',
-  fontSize: 18,
-  letterSpacing: 0.5,
+  ...typography.button,
+  color: colors.textInverse,
 };
 
+// ============================================================================
+// INPUT STYLES - Updated with climbing theme
+// ============================================================================
 export const inputStyle = {
   borderWidth: 0,
-  borderRadius: 24,
-  padding: 16,
+  borderRadius: 12,
+  padding: spacing.md,
   backgroundColor: colors.surface,
   color: colors.text,
-  marginBottom: 12,
+  marginBottom: spacing.sm,
   fontSize: 16,
-  shadowColor: colors.primary,
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.06,
-  shadowRadius: 4,
-  elevation: 1,
+  ...shadows.sm,
 };
 
+// ============================================================================
+// CHIP STYLES - Updated with climbing theme
+// ============================================================================
 export const chipStyle = {
   borderWidth: 1,
   borderColor: colors.chipBorder,
   borderRadius: 20,
-  paddingVertical: 8,
-  paddingHorizontal: 20,
-  marginRight: 10,
+  paddingVertical: spacing.sm,
+  paddingHorizontal: spacing.md,
+  marginRight: spacing.sm,
   backgroundColor: colors.chipUnselected,
   minWidth: 48,
-  alignItems: 'center',
-  justifyContent: 'center',
+  alignItems: 'center' as const,
+  justifyContent: 'center' as const,
 };
 
 export const chipSelectedStyle = {
   backgroundColor: colors.chipSelected,
   borderColor: colors.chipSelected,
 };
+
+// ============================================================================
+// RE-EXPORTS - Make new design system easily accessible
+// ============================================================================
+
+// Export design system modules
+export { typography } from './design/typography';
+export { spacing, layout } from './design/spacing';
+export { shadows, borderRadius } from './design/theme';
+export { climbingCopy } from './utils/climbingCopy';
+
+// Export climbing-specific colors for easy access
+export { primary, accent, chalk } from './design/theme';
