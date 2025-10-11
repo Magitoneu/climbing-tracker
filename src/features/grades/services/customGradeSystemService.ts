@@ -19,6 +19,32 @@ function slugify(input: string) {
     .replace(/(^-|-$)/g, '');
 }
 
+/**
+ * Converts a user's custom grade system to a full grade system definition.
+ *
+ * Transforms the simplified CustomGradeSystem format (used in storage/UI) into the complete
+ * GradeSystemDefinition format required by the grade system registry. Assigns sequential
+ * canonical values (0, 1, 2...) for approximate cross-system mapping.
+ *
+ * @param custom - User-defined custom grade system with name and color grades
+ * @returns Full grade system definition ready for registration
+ *
+ * @example
+ * ```ts
+ * const customSystem: CustomGradeSystem = {
+ *   id: 'user-mygym',
+ *   name: 'My Gym Colors',
+ *   grades: [
+ *     { name: 'Green', color: '#00ff00' },
+ *     { name: 'Blue', color: '#0000ff' },
+ *   ]
+ * };
+ *
+ * const definition = toDefinition(customSystem);
+ * console.log(definition.grades[0]);
+ * // { id: 'user-mygym-green', label: 'Green', canonicalValue: 0, color: '#00ff00', ... }
+ * ```
+ */
 export function toDefinition(custom: CustomGradeSystem): GradeSystemDefinition {
   const id = custom.id || `user-${slugify(custom.name)}`;
   const grades: GradeEntry[] = custom.grades.map((g, idx) => ({
@@ -39,6 +65,25 @@ export function toDefinition(custom: CustomGradeSystem): GradeSystemDefinition {
   };
 }
 
+/**
+ * Loads all custom grade systems from AsyncStorage and registers them in the runtime cache.
+ *
+ * Called during app initialization (after user login) to make custom systems available
+ * throughout the app. Systems are loaded from local storage to ensure offline access.
+ *
+ * @returns Promise that resolves when all systems are registered
+ *
+ * @example
+ * ```ts
+ * // In App.tsx after authentication
+ * useEffect(() => {
+ *   if (user) {
+ *     await loadAndRegisterAllCustomSystems();
+ *     console.log('Custom systems loaded');
+ *   }
+ * }, [user]);
+ * ```
+ */
 export async function loadAndRegisterAllCustomSystems(): Promise<void> {
   const customs = await getCustomGradeSystems();
   customs.forEach(cs => {
@@ -47,6 +92,38 @@ export async function loadAndRegisterAllCustomSystems(): Promise<void> {
   });
 }
 
+/**
+ * Creates or updates a custom grade system across all storage layers.
+ *
+ * Performs a three-layer save:
+ * 1. **AsyncStorage**: Saves locally for offline access and fast reads
+ * 2. **Runtime Registry**: Registers for immediate use in pickers/conversions
+ * 3. **Firestore**: Syncs to cloud (silently fails if offline)
+ *
+ * @param custom - Custom grade system to save (with or without existing id)
+ * @returns Promise resolving to the system ID (generated from name if not provided)
+ *
+ * @example
+ * ```ts
+ * // Create new system
+ * const id = await upsertCustomSystem({
+ *   name: 'My Gym Colors',
+ *   grades: [
+ *     { name: 'Green', color: '#00ff00' },
+ *     { name: 'Blue', color: '#0000ff' },
+ *     { name: 'Red', color: '#ff0000' },
+ *   ]
+ * });
+ * console.log(id); // 'user-my-gym-colors'
+ *
+ * // Update existing system
+ * await upsertCustomSystem({
+ *   id: 'user-my-gym-colors',
+ *   name: 'My Gym Colors (Updated)',
+ *   grades: [...], // modified grades
+ * });
+ * ```
+ */
 export async function upsertCustomSystem(custom: CustomGradeSystem): Promise<string> {
   // Save/replace in storage
   const systems = await getCustomGradeSystems();
@@ -72,6 +149,24 @@ export async function upsertCustomSystem(custom: CustomGradeSystem): Promise<str
   return id;
 }
 
+/**
+ * Permanently deletes a custom grade system from all storage layers.
+ *
+ * Removes the system from:
+ * 1. **AsyncStorage**: Local cache
+ * 2. **Runtime Registry**: Pickers and conversion functions
+ * 3. **Firestore**: Cloud storage (silently fails if offline)
+ *
+ * @param id - ID of the custom grade system to delete
+ * @returns Promise that resolves when deletion completes
+ *
+ * @example
+ * ```ts
+ * await removeCustomSystem('user-oldgym');
+ * // System no longer appears in grade pickers
+ * // Sessions using this system will still display correct labels via snapshot
+ * ```
+ */
 export async function removeCustomSystem(id: string): Promise<void> {
   await deleteCustomGradeSystem(id);
   // Remove from runtime cache so it no longer appears in pickers
@@ -88,6 +183,23 @@ export async function removeCustomSystem(id: string): Promise<void> {
   }
 }
 
+/**
+ * Checks if a grade system ID represents a user-defined custom system.
+ *
+ * Returns false for builtin systems (V-Scale, Font) and true for custom systems.
+ * Useful for conditionally showing edit/delete buttons in the UI.
+ *
+ * @param id - Grade system ID to check
+ * @returns True if the system is user-defined, false if builtin or not found
+ *
+ * @example
+ * ```ts
+ * console.log(isUserSystem('vscale')); // false (builtin)
+ * console.log(isUserSystem('font')); // false (builtin)
+ * console.log(isUserSystem('user-mygym')); // true (custom)
+ * console.log(isUserSystem('nonexistent')); // false (not found)
+ * ```
+ */
 export function isUserSystem(id: string): boolean {
   const sys = getGradeSystem(id);
   return !!sys && sys.scope === 'user';
@@ -98,6 +210,30 @@ function clearUserSystemsFromRegistry() {
   all.filter(s => s.scope === 'user').forEach(s => unregisterSystem(s.id));
 }
 
+/**
+ * Subscribes to real-time updates of custom grade systems from Firestore.
+ *
+ * Automatically syncs cloud changes to local storage and runtime registry. The callback
+ * fires immediately with current data, then again whenever systems are added/modified/deleted
+ * in Firestore. Handles offline scenarios gracefully by retaining existing local systems.
+ *
+ * @param onChange - Optional callback invoked with updated systems array on each change
+ * @returns Unsubscribe function to stop listening to updates (returns no-op if user not authenticated)
+ *
+ * @example
+ * ```ts
+ * // In App.tsx
+ * useEffect(() => {
+ *   if (user) {
+ *     const unsubscribe = subscribeCustomGradeSystems((systems) => {
+ *       console.log(`Loaded ${systems.length} custom grade systems`);
+ *       // Update UI state if needed
+ *     });
+ *     return unsubscribe;
+ *   }
+ * }, [user]);
+ * ```
+ */
 export function subscribeCustomGradeSystems(onChange?: (systems: CustomGradeSystem[]) => void) {
   const user = auth.currentUser;
   if (!user) return () => {};
@@ -126,6 +262,27 @@ export function subscribeCustomGradeSystems(onChange?: (systems: CustomGradeSyst
   );
 }
 
+/**
+ * Uploads all locally-stored custom grade systems to Firestore.
+ *
+ * Used for one-time migration or resyncing after extended offline use. Silently skips
+ * systems that fail to upload (e.g., network issues, permission denied). Does not remove
+ * local systems on failure, ensuring no data loss.
+ *
+ * @returns Promise that resolves when all uploads complete (or fail)
+ *
+ * @example
+ * ```ts
+ * // After user logs in following offline period
+ * useEffect(() => {
+ *   if (user) {
+ *     pushLocalCustomGradeSystemsToCloud()
+ *       .then(() => console.log('Local systems synced to cloud'))
+ *       .catch(err => console.warn('Sync failed:', err));
+ *   }
+ * }, [user]);
+ * ```
+ */
 export async function pushLocalCustomGradeSystemsToCloud() {
   const user = auth.currentUser;
   if (!user) return;

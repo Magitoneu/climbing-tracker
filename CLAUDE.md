@@ -266,9 +266,63 @@ git commit -m "feat(grades)!: migrate to canonical grade system"
 - **Persistence:** AsyncStorage for user preferences
 
 ### Styling
-- Inline `StyleSheet.create` or separate `.styles.ts` files
+- Use `StyleSheet.create` for all styles (no inline styles)
+- Separate `.styles.ts` files for complex components
 - Color constants defined in `src/shared/theme.ts`
 - No CSS-in-JS library; uses React Native StyleSheet API
+
+### Code Quality Standards
+
+**ESLint Compliance** (0 errors enforced by pre-commit hooks):
+- **No empty catch blocks**: Always add explanatory comments
+  ```ts
+  try {
+    await riskyOperation();
+  } catch {
+    // Intentionally silencing error - operation is optional
+  }
+  ```
+- **No inline styles**: Use `StyleSheet.create` for all styles
+- **No explicit `any` types**: Use proper TypeScript types or `unknown` with type guards
+- **No unused variables**: Remove or prefix with `_` if intentionally unused
+- **Console statements**: Wrap in `__DEV__` checks for production safety
+  ```ts
+  if (__DEV__) {
+    console.log('Debug info');
+  }
+  ```
+
+**Component Guidelines:**
+- **Max 250 lines per file**: Extract components if exceeding limit
+- **Single responsibility**: Each component/function should do one thing well
+- **JSDoc comments**: Required for all exported services, hooks, and utilities
+  ```ts
+  /**
+   * Brief description of what the function does.
+   *
+   * @param paramName - Description of the parameter
+   * @returns Description of return value
+   * @throws Error description if applicable
+   *
+   * @example
+   * ```ts
+   * const result = myFunction(arg);
+   * ```
+   */
+  export function myFunction(paramName: string): ReturnType {
+    // implementation
+  }
+  ```
+
+**Testing:**
+- All utility functions must have unit tests
+- Services should have integration tests
+- Run `pnpm test` before committing
+
+**Pre-Commit Hooks:**
+- ESLint --fix runs automatically
+- Prettier formats code automatically
+- Never use `git commit --no-verify` (bypasses quality checks)
 
 ## Common Workflows
 
@@ -306,12 +360,13 @@ git commit -m "feat(grades)!: migrate to canonical grade system"
 
 ## Known Limitations & TODOs
 
-- **Limited Test Coverage:** 20 tests currently (primarily utils); need more component/integration tests
-- **Pre-existing Lint Issues:** 287 lint warnings/errors to be addressed in Phase 3-4 refactoring
+- **Limited Test Coverage:** 14 tests currently (primarily utils); need more component/integration tests
+- **Remaining Lint Warnings:** 228 ESLint warnings (down from 287) - mostly non-critical inline styles and any types
 - **Stats Placeholder:** StatsScreen and DashboardScreen not fully implemented
 - **Google OAuth in Expo Go:** Unreliable on native; production OAuth clients needed for standalone builds
 - **No Backfill:** Existing Firestore sessions lack canonical values until next edit/view (enriched on-the-fly)
 - **Approximation UI:** `~` marker shown for inexact grade conversions; consider legend/tooltip
+- **Component Size:** SessionsScreen (423 lines) and LogScreen (368 lines) could benefit from further extraction
 
 ## Important Firestore Rules
 

@@ -30,7 +30,15 @@ export interface CloudSession extends Omit<Session, 'id'> {
   migrated?: boolean; // flag if created from local migration
 }
 
-// Convert local Session shape (currently without id/userId) to Firestore doc data
+/**
+ * Converts a local Session object to Firestore document data format.
+ * Enriches boulders and attempts with canonical grade snapshots for cross-system compatibility.
+ *
+ * @param session - Local session data (may lack id/userId/timestamps)
+ * @param uid - Firebase user ID to associate with the session
+ * @returns Firestore-ready document data with canonical grade enrichment
+ * @internal
+ */
 function toDocData(session: Session, uid: string): Omit<CloudSession, 'id'> {
   // Derive durationMinutes from legacy shape if needed
   const durationMinutes =
@@ -68,6 +76,29 @@ function toDocData(session: Session, uid: string): Omit<CloudSession, 'id'> {
   return doc;
 }
 
+/**
+ * Adds a new climbing session to Firestore with canonical grade enrichment.
+ *
+ * Automatically enriches boulders and attempts with grade snapshots containing:
+ * - `canonicalValue`: Normalized difficulty on 0-18 scale for cross-system comparison
+ * - `gradeSnapshot`: Original label, system ID, and version for historical accuracy
+ *
+ * @param session - Session data with date, duration, notes, grade system, and boulders/attempts
+ * @returns Promise resolving to the Firestore document ID
+ * @throws Error if user is not authenticated
+ * @throws FirebaseError if Firestore write fails (e.g., network unavailable, permission denied)
+ *
+ * @example
+ * ```ts
+ * await addSession({
+ *   date: '2025-10-11',
+ *   durationMinutes: 90,
+ *   gradeSystem: 'V',
+ *   boulders: [{ grade: 'V5', flashed: false, attempts: 3 }],
+ *   attempts: [{ grade: 'V5', attempts: 3, flashed: false }],
+ * });
+ * ```
+ */
 export async function addSession(session: Session): Promise<string> {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
@@ -75,6 +106,23 @@ export async function addSession(session: Session): Promise<string> {
   return docRef.id;
 }
 
+/**
+ * Updates an existing session in Firestore with partial data.
+ * Automatically sets the `updatedAt` timestamp.
+ *
+ * @param id - Firestore document ID of the session to update
+ * @param partial - Partial session data to merge (e.g., { notes: 'Updated notes' })
+ * @throws Error if user is not authenticated
+ * @throws FirebaseError if document doesn't exist or update fails
+ *
+ * @example
+ * ```ts
+ * await updateSession('session-id-123', {
+ *   notes: 'Felt strong today!',
+ *   durationMinutes: 95,
+ * });
+ * ```
+ */
 export async function updateSession(id: string, partial: Partial<Session>) {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
@@ -85,6 +133,18 @@ export async function updateSession(id: string, partial: Partial<Session>) {
   } as any);
 }
 
+/**
+ * Deletes a session from Firestore permanently.
+ *
+ * @param id - Firestore document ID of the session to delete
+ * @throws Error if user is not authenticated
+ * @throws FirebaseError if document doesn't exist or delete fails
+ *
+ * @example
+ * ```ts
+ * await deleteSession('session-id-123');
+ * ```
+ */
 export async function deleteSession(id: string) {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
@@ -94,6 +154,29 @@ export async function deleteSession(id: string) {
 
 export type UnsubscribeFn = () => void;
 
+/**
+ * Subscribes to real-time updates of the user's climbing sessions from Firestore.
+ * Sessions are ordered by date (most recent first).
+ *
+ * Automatically enriches legacy sessions missing canonical grade information on-the-fly.
+ * The callback fires immediately with current data, then again whenever sessions change.
+ *
+ * @param cb - Callback invoked with the updated session array on each change
+ * @returns Unsubscribe function to stop listening to updates
+ * @throws Error if user is not authenticated
+ * @throws FirebaseError if query fails (e.g., network issues, permission denied)
+ *
+ * @example
+ * ```ts
+ * const unsubscribe = subscribeToSessions((sessions) => {
+ *   console.log('Sessions updated:', sessions);
+ *   setSessions(sessions);
+ * });
+ *
+ * // Later: stop listening
+ * unsubscribe();
+ * ```
+ */
 export function subscribeToSessions(cb: (sessions: CloudSession[]) => void): UnsubscribeFn {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
@@ -123,8 +206,24 @@ export function subscribeToSessions(cb: (sessions: CloudSession[]) => void): Uns
   });
 }
 
-// Migration: take locally stored sessions (array) and push those not present in cloud
-// We'll use date+duration+attempts length heuristic to avoid duplicates.
+/**
+ * Migrates locally-stored sessions to Firestore (one-time operation after user authentication).
+ *
+ * Uses a heuristic (date + duration + boulder count) to detect and skip duplicates.
+ * All migrated sessions are flagged with `migrated: true` for tracking.
+ *
+ * @param localSessions - Array of sessions stored in AsyncStorage before cloud sync
+ * @returns Promise resolving to the number of sessions successfully migrated
+ * @throws Error if user is not authenticated
+ * @throws FirebaseError if batch write fails
+ *
+ * @example
+ * ```ts
+ * const localSessions = JSON.parse(await AsyncStorage.getItem('sessions') || '[]');
+ * const count = await migrateLocalSessions(localSessions);
+ * console.log(`Migrated ${count} sessions to cloud`);
+ * ```
+ */
 export async function migrateLocalSessions(localSessions: Session[]): Promise<number> {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
