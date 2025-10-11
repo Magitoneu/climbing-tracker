@@ -56,6 +56,7 @@ export default function SessionsScreen() {
             const parsed = data ? JSON.parse(data) : [];
             if (!cancelled) setSessions(parsed);
           } catch {
+            // Failed to load local sessions - display empty list
             if (!cancelled) setSessions([]);
           }
           return;
@@ -82,7 +83,9 @@ export default function SessionsScreen() {
             // Cache locally for offline
             try {
               await store.setItem('sessions', JSON.stringify(mapped));
-            } catch {}
+            } catch {
+              // Non-critical: silently fail to cache sessions locally
+            }
           });
         } catch (e) {
           console.warn('[Sessions] Live subscribe failed, using local cache', (e as any)?.message);
@@ -91,6 +94,7 @@ export default function SessionsScreen() {
             const parsed = data ? JSON.parse(data) : [];
             if (!cancelled) setSessions(parsed);
           } catch {
+            // Failed to load local fallback sessions - display empty list
             if (!cancelled) setSessions([]);
           }
         }
@@ -183,7 +187,9 @@ export default function SessionsScreen() {
               setSessions(updated);
               try {
                 await store.setItem('sessions', JSON.stringify(updated));
-              } catch {}
+              } catch {
+                // Non-critical: silently fail to update local cache after delete
+              }
               if (target?.id && auth.currentUser) {
                 try {
                   await deleteSession(target.id);
@@ -197,7 +203,9 @@ export default function SessionsScreen() {
                   setSessions(restored);
                   try {
                     await store.setItem('sessions', JSON.stringify(restored));
-                  } catch {}
+                  } catch {
+                    // Non-critical: silently fail to restore session to local cache
+                  }
                 }
               }
             };
@@ -379,7 +387,9 @@ export default function SessionsScreen() {
             setSessions(updatedList);
             try {
               await store.setItem('sessions', JSON.stringify(updatedList));
-            } catch {}
+            } catch {
+              // Non-critical: silently fail to update local cache after edit
+            }
             setEditModalVisible(false);
             // Cloud update if possible
             if (editSession.id && auth.currentUser) {

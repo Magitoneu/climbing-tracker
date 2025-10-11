@@ -35,7 +35,9 @@ const isStandalone = Platform.select({
 // Proxy (https://auth.expo.io/@owner/slug) used when not standalone. Custom scheme when built.
 const redirectUri = isStandalone ? makeRedirectUri({ scheme: 'climbingtracker' }) : makeRedirectUri(); // default -> proxy in Expo Go
 
-console.log('[Auth] Using redirect URI:', redirectUri, 'isStandalone:', isStandalone);
+if (__DEV__) {
+  console.log('[Auth] Using redirect URI:', redirectUri, 'isStandalone:', isStandalone);
+}
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
@@ -87,10 +89,14 @@ export default function AuthScreen() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      console.log('[Google][Web] Sign-in success', user.uid, user.email);
+      if (__DEV__) {
+        console.log('[Google][Web] Sign-in success', user.uid, user.email);
+      }
       Alert.alert('Google sign-in successful!');
     } catch (e: any) {
-      console.warn('[Google][Web] signInWithPopup error', e?.code, e?.message);
+      if (__DEV__) {
+        console.warn('[Google][Web] signInWithPopup error', e?.code, e?.message);
+      }
       // Fallback to redirect if popup is blocked or unsupported
       if (e?.code === 'auth/popup-blocked' || e?.code === 'auth/popup-closed-by-user') {
         try {
@@ -179,7 +185,7 @@ export default function AuthScreen() {
         </TouchableOpacity>
       )}
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#ea4335', opacity: googleLoading ? 0.7 : 1 }]}
+        style={[styles.button, styles.googleButton, googleLoading && styles.googleButtonLoading]}
         onPress={isWeb ? handleGoogleWeb : handleGoogleNative}
         disabled={googleLoading || (!isWeb && !request)}
       >
@@ -217,6 +223,12 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   container: { alignItems: 'center', flex: 1, justifyContent: 'center', padding: 24 },
+  googleButton: {
+    backgroundColor: '#ea4335',
+  },
+  googleButtonLoading: {
+    opacity: 0.7,
+  },
   input: { borderColor: '#ccc', borderRadius: 8, borderWidth: 1, marginBottom: 16, padding: 12, width: '100%' },
   switchContainer: { marginTop: 12 },
   switchText: { color: '#2563eb', marginTop: 6, textAlign: 'center' },
