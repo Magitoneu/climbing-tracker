@@ -1,12 +1,11 @@
 import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import DashboardScreen from '../screens/DashboardScreen';
-import LogScreen from '../screens/LogScreen';
-import SessionsScreen from '../screens/SessionsScreen';
-import StatsScreen from '../screens/StatsScreen';
-import SettingsStack from '../screens/SettingsStack';
-import { colors } from '../theme';
+import { DashboardScreen } from '../features/dashboard';
+import { LogScreen, SessionsScreen } from '../features/sessions';
+import { StatsScreen } from '../features/stats';
+import { SettingsStack } from '../features/settings';
+import { colors } from '../shared/theme';
 const Tab = createBottomTabNavigator();
 
 function VisibleHeader({ title }: { title: string }) {

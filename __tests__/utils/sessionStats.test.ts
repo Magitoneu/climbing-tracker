@@ -1,5 +1,5 @@
-import { buildSessionStats } from '../../src/utils/sessionStats';
-import { Attempt } from '../../src/models/Session';
+import { buildSessionStats } from '../../src/features/sessions/utils/sessionStats';
+import { Attempt } from '../../src/features/sessions/models/Session';
 
 describe('Session Stats', () => {
   it('should calculate volume (total attempts)', () => {

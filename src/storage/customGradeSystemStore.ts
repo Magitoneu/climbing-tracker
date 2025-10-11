@@ -10,11 +10,10 @@ export async function setSelectedGradeSystem(id: string): Promise<void> {
   await storage.setItem(SELECTED_GRADE_SYSTEM_KEY, id);
 }
 // Storage logic for custom grade systems
-import { CustomGradeSystem } from '../models/CustomGradeSystem';
+import { CustomGradeSystem } from '../features/grades/models/CustomGradeSystem';
 import storage from './simpleStore';
 
 const CUSTOM_GRADE_SYSTEMS_KEY = 'customGradeSystems';
-
 
 export async function getCustomGradeSystems(): Promise<CustomGradeSystem[]> {
   const raw = await storage.getItem(CUSTOM_GRADE_SYSTEMS_KEY);
@@ -25,7 +24,6 @@ export async function getCustomGradeSystems(): Promise<CustomGradeSystem[]> {
     return [];
   }
 }
-
 
 export async function saveCustomGradeSystems(systems: CustomGradeSystem[]): Promise<void> {
   await storage.setItem(CUSTOM_GRADE_SYSTEMS_KEY, JSON.stringify(systems));
@@ -51,6 +49,7 @@ export async function getCustomGradeSystemById(id: string): Promise<CustomGradeS
 export async function upsertCustomGradeSystem(system: CustomGradeSystem): Promise<void> {
   const systems = await getCustomGradeSystems();
   const idx = systems.findIndex(s => s.id === system.id);
-  if (idx >= 0) systems[idx] = system; else systems.push(system);
+  if (idx >= 0) systems[idx] = system;
+  else systems.push(system);
   await saveCustomGradeSystems(systems);
 }

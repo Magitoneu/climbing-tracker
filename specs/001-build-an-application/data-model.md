@@ -3,6 +3,7 @@
 ## Entities
 
 ### User
+
 - id: string
 - name: string
 - email: string
@@ -11,6 +12,7 @@
 - accountSettings: object
 
 ### ClimbingSession
+
 - id: string
 - userId: string
 - date: string (ISO8601)
@@ -21,6 +23,7 @@
 - notes: string
 
 ### Problem
+
 - id: string
 - sessionId: string
 - name: string
@@ -29,6 +32,7 @@
 - sent: boolean
 
 ### Goal
+
 - id: string
 - userId: string
 - targetDifficulty: string
@@ -37,18 +41,21 @@
 - progressStatus: string
 
 ### GradingSystem
+
 - id: string
 - systemName: string
 - gradeList: string[]
 - associatedGym: string
 
 ## Relationships
+
 - User has many ClimbingSessions
 - User has many Goals
 - User has one GradingSystemPreference
 - GradingSystem can be associated with multiple users
 
 ## Validation Rules
+
 - All required fields must be present when logging a session
 - Email must be valid format
 - Password must meet security requirements
@@ -56,6 +63,7 @@
 - Dates must be valid and not in the future
 
 ## State Transitions
+
 - Goal: status changes from "active" → "completed" or "abandoned"
 - Session: can be edited or deleted by owner
 

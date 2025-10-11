@@ -3,12 +3,16 @@ import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import Tabs from './src/navigation/Tabs';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import AuthScreen from './src/screens/AuthScreen';
+import { AuthScreen } from './src/features/auth';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { useMigrateLocalSessions } from './src/hooks/useMigrateLocalSessions';
+import { useMigrateLocalSessions } from './src/shared/hooks/useMigrateLocalSessions';
 import { auth } from './src/config/firebase';
-import { loadAndRegisterAllCustomSystems, subscribeCustomGradeSystems, pushLocalCustomGradeSystemsToCloud } from './src/services/customGradeSystemService';
+import {
+  loadAndRegisterAllCustomSystems,
+  subscribeCustomGradeSystems,
+  pushLocalCustomGradeSystemsToCloud,
+} from './src/features/grades';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -26,19 +30,26 @@ export default function App() {
           await pushLocalCustomGradeSystemsToCloud();
         } catch {}
         // Live subscribe to cloud updates
-        try { unsubscribeCustom = subscribeCustomGradeSystems(); } catch {}
+        try {
+          unsubscribeCustom = subscribeCustomGradeSystems();
+        } catch {}
       } else if (unsubscribeCustom) {
         unsubscribeCustom();
         unsubscribeCustom = null;
       }
     });
-    return () => { if (unsubscribeCustom) unsubscribeCustom(); unsubscribe(); };
+    return () => {
+      if (unsubscribeCustom) unsubscribeCustom();
+      unsubscribe();
+    };
   }, []);
 
   // Load any saved custom grade systems into the runtime registry on startup
   useEffect(() => {
     (async () => {
-      try { await loadAndRegisterAllCustomSystems(); } catch {}
+      try {
+        await loadAndRegisterAllCustomSystems();
+      } catch {}
     })();
   }, []);
 

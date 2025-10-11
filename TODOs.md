@@ -128,3 +128,4 @@ The session card "max grade" now follows the same dual display + approximation l
 ## Session logging
 
 - Add new field: "Send" so, this means if the boulder was sent or not. 
+- check colors meaninng on sessions screen

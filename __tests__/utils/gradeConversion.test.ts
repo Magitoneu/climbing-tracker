@@ -1,4 +1,4 @@
-import { convertGrade, toCanonical, fromCanonical } from '../../src/models/gradeConversion';
+import { convertGrade, toCanonical, fromCanonical } from '../../src/features/grades/models/gradeConversion';
 
 describe('Grade Conversion', () => {
   describe('convertGrade', () => {
