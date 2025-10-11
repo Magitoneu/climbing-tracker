@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Expo
+.expo/
+.expo-shared/
+
+# Build outputs
+dist/
+build/
+*.log
+*.js.map
+
+# Config files
+*.config.js
+babel.config.js
+metro.config.js
+jest.config.js
+jest.setup.js
+.eslintrc.js
+
+# Legacy tests
+specs/
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+.DS_Store
+*.swp
+*.swo

@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Expo
+.expo/
+.expo-shared/
+
+# Build outputs
+dist/
+build/
+*.log
+*.js.map
+
+# Config files (except prettier config itself)
+*.config.js
+!.prettierrc.js
+babel.config.js
+metro.config.js
+jest.config.js
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+.DS_Store
+*.swp
+*.swo
+
+# Generated files
+CLAUDE.md
+TODOs.md
+README.md
