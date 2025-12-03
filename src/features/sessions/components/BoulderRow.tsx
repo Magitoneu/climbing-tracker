@@ -7,7 +7,9 @@ interface BoulderRowProps {
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Attempt } from '../models/Session';
-import { colors } from '../../../shared/theme';
+import { colors, borderRadius } from '../../../shared/design/theme';
+import { typography } from '../../../shared/design/typography';
+import { spacing } from '../../../shared/design/spacing';
 import { useGradeDisplaySystem, formatAttempt } from '../../grades/hooks/useGradeDisplaySystem';
 
 export default function BoulderRow({ attempt, onRemove }: BoulderRowProps) {
@@ -32,22 +34,23 @@ export default function BoulderRow({ attempt, onRemove }: BoulderRowProps) {
 
 const styles = StyleSheet.create({
   grade: {
+    ...typography.bodyBold,
     color: colors.primary,
-    fontWeight: '700',
-    marginRight: 12,
+    marginRight: spacing.sm,
   },
   remove: {
-    color: 'red',
-    marginLeft: 8,
+    ...typography.captionBold,
+    color: colors.error,
+    marginLeft: spacing.sm,
   },
   row: {
     alignItems: 'center',
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 6,
+    borderRadius: borderRadius.sm,
     borderWidth: 1,
     flexDirection: 'row',
-    marginBottom: 6,
-    padding: 8,
+    marginBottom: spacing.xs,
+    padding: spacing.sm,
   },
 });

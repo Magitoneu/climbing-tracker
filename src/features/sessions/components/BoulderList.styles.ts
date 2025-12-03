@@ -1,84 +1,84 @@
 import { StyleSheet } from 'react-native';
-import { colors } from '../../../shared/theme';
+import { colors, borderRadius, shadows } from '../../../shared/design/theme';
+import { typography } from '../../../shared/design/typography';
+import { spacing } from '../../../shared/design/spacing';
 
 export const styles = StyleSheet.create({
   attemptsInput: {
+    ...typography.body,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
     color: colors.text,
-    marginBottom: 8,
-    padding: 8,
+    marginBottom: spacing.sm,
+    padding: spacing.sm,
   },
   attemptsLabel: {
+    ...typography.caption,
     color: colors.text,
-    fontSize: 13,
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   boulderCard: {
     backgroundColor: colors.background,
-    borderRadius: 12,
-    elevation: 1,
-    marginBottom: 12,
-    padding: 12,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.sm,
+    padding: spacing.sm,
+    ...shadows.sm,
   },
   boulderHeader: {
     alignItems: 'center',
     flexDirection: 'row',
-    marginBottom: 4,
+    marginBottom: spacing.xxs,
   },
   boulderNumber: {
+    ...typography.captionBold,
     color: colors.text,
-    fontSize: 13,
-    fontWeight: 'bold',
   },
   changeGradeButton: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
   },
   changeGradeText: {
-    color: colors.surface,
+    ...typography.button,
+    color: colors.textOnPrimary,
   },
   emptyText: {
-    color: colors.text,
-    opacity: 0.7,
+    ...typography.bodySmall,
+    color: colors.textSecondary,
   },
   flashIcon: {
-    marginLeft: 6,
+    marginLeft: spacing.xs,
   },
   gradeRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   gradeText: {
+    ...typography.bodyBold,
     color: colors.primary,
-    fontSize: 15,
-    fontWeight: 'bold',
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   picker: {
     color: colors.text,
   },
   pickerContainer: {
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   removeButton: {
     alignSelf: 'flex-end',
     backgroundColor: colors.error,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
   removeButtonText: {
-    color: colors.surface,
+    ...typography.button,
+    color: colors.textOnPrimary,
   },
 });

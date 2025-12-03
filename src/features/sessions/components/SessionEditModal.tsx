@@ -5,7 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Session } from '../models/Session';
 import type { Boulder } from '../models/Boulder';
 import { getGradeSystem } from '../../grades/services/gradeSystemService';
-import { colors } from '../../../shared/theme';
+import { colors } from '../../../shared/design/theme';
 import BoulderList from './BoulderList';
 import { styles } from './SessionEditModal.styles';
 

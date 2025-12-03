@@ -1,42 +1,43 @@
 import { StyleSheet } from 'react-native';
-import { colors } from '../../../shared/theme';
+import { colors, borderRadius } from '../../../shared/design/theme';
+import { typography } from '../../../shared/design/typography';
+import { spacing } from '../../../shared/design/spacing';
 
 export const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   addBoulderButton: {
     alignSelf: 'flex-start',
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    marginBottom: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
   bouldersTitle: {
+    ...typography.bodyBold,
     color: colors.primary,
-    fontSize: 15,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   buttonText: {
-    color: colors.surface,
-    fontWeight: 'bold',
+    ...typography.button,
+    color: colors.textOnPrimary,
   },
   cancelButton: {
     backgroundColor: colors.error,
-    borderRadius: 8,
-    marginRight: 8,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
+    borderRadius: borderRadius.md,
+    marginRight: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
   container: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
+    borderRadius: borderRadius.lg,
     maxHeight: '100%',
-    padding: 24,
+    padding: spacing.lg,
     width: '100%',
   },
   keyboardAvoidingView: {
@@ -44,34 +45,34 @@ export const styles = StyleSheet.create({
     width: '90%',
   },
   label: {
+    ...typography.bodySmall,
     color: colors.text,
-    fontSize: 14,
-    marginBottom: 4,
+    marginBottom: spacing.xxs,
   },
   modalOverlay: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.15)',
+    backgroundColor: colors.overlay,
     flex: 1,
     justifyContent: 'center',
   },
   saveButton: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
   textInput: {
+    ...typography.body,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
     color: colors.text,
-    marginBottom: 12,
-    padding: 8,
+    marginBottom: spacing.sm,
+    padding: spacing.sm,
   },
   title: {
+    ...typography.h2,
     color: colors.primary,
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
 });

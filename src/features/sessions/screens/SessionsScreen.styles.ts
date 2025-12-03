@@ -1,132 +1,125 @@
 import { StyleSheet } from 'react-native';
-import { colors } from '../../../shared/theme';
+import { colors, borderRadius, shadows } from '../../../shared/design/theme';
+import { typography } from '../../../shared/design/typography';
+import { spacing } from '../../../shared/design/spacing';
 
 export const styles = StyleSheet.create({
   accentBar: {
-    height: 6,
+    height: spacing.xs,
   },
   actionRow: {
     flexDirection: 'row',
-    marginTop: 12,
+    marginTop: spacing.sm,
   },
   boulderCircle: {
-    marginRight: 6,
+    marginRight: spacing.xs,
   },
   boulderGradeText: {
+    ...typography.body,
     color: colors.text,
-    fontSize: 14,
   },
   boulderRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   buttonText: {
-    color: colors.surface,
-    fontWeight: 'bold',
+    ...typography.button,
+    color: colors.textOnPrimary,
   },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 16,
-    elevation: 3,
+    borderRadius: borderRadius.lg,
     overflow: 'hidden',
-    shadowColor: colors.primary,
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    ...shadows.md,
   },
   container: {
     backgroundColor: colors.background,
     flex: 1,
-    padding: 2,
+    padding: spacing.xs,
   },
   dateText: {
+    ...typography.h3,
     flex: 1,
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   deleteButton: {
     backgroundColor: colors.error,
-    borderRadius: 8,
-    marginRight: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    borderRadius: borderRadius.md,
+    marginRight: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
   editButton: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
   },
   emptyText: {
-    color: colors.text,
-    fontSize: 16,
-    marginTop: 32,
-    opacity: 0.5,
+    ...typography.body,
+    color: colors.textSecondary,
+    marginTop: spacing.xl,
     textAlign: 'center',
   },
   expandedContainer: {
-    paddingBottom: 12,
-    paddingHorizontal: 16,
+    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
   expandedTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    marginBottom: 6,
+    ...typography.bodyBold,
+    marginBottom: spacing.xs,
   },
   flashIcon: {
-    marginLeft: 6,
+    marginLeft: spacing.xs,
   },
   flashText: {
-    color: colors.text,
-    fontSize: 14,
-    opacity: 0.7,
+    ...typography.bodySmall,
+    color: colors.textSecondary,
   },
   headerRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    padding: 16,
+    padding: spacing.md,
   },
   iconMarginRight: {
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   iconMarginRight4: {
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   iconWithOpacity: {
-    marginRight: 4,
+    marginRight: spacing.xs,
     opacity: 0.7,
   },
   maxGradeText: {
-    fontSize: 16,
+    ...typography.grade,
   },
   noBoulders: {
-    color: colors.text,
-    opacity: 0.7,
+    ...typography.bodySmall,
+    color: colors.textSecondary,
   },
   notesText: {
-    color: colors.text,
-    fontSize: 13,
+    ...typography.caption,
+    color: colors.textSecondary,
     fontStyle: 'italic',
-    marginTop: 8,
-    opacity: 0.7,
+    marginTop: spacing.sm,
   },
   sessionCard: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   statItem: {
     alignItems: 'center',
     flexDirection: 'row',
   },
   statText: {
-    color: colors.text,
-    fontSize: 14,
-    opacity: 0.7,
+    ...typography.bodySmall,
+    color: colors.textSecondary,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom: 8,
-    paddingHorizontal: 16,
+    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
 });
 

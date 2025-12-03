@@ -20,7 +20,7 @@ import { subscribeToSessions, CloudSession, updateSession, deleteSession } from 
 import { Alert } from 'react-native';
 import { auth } from '../../../config/firebase';
 import { useFocusEffect } from '@react-navigation/native';
-import { colors } from '../../../shared/theme';
+import { colors } from '../../../shared/design/theme';
 import { V_GRADES, FONT_GRADES } from '../../grades/models/grades';
 // Display original logged grades only (no conversion)
 import { getGradeSystem } from '../../grades/services/gradeSystemService';

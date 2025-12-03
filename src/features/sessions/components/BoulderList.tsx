@@ -5,7 +5,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { Boulder } from '../models/Boulder';
 import { getGradeSystem } from '../../grades/services/gradeSystemService';
 import { useGradeDisplaySystem, formatBoulder } from '../../grades/hooks/useGradeDisplaySystem';
-import { colors } from '../../../shared/theme';
+import { colors } from '../../../shared/design/theme';
 import { styles } from './BoulderList.styles';
 
 interface BoulderListProps {
