@@ -14,11 +14,8 @@ import { colors } from '../../../shared/design/theme';
 import BoulderPill from '../components/BoulderPill';
 import BoulderModal from '../components/BoulderModal';
 import styles from './LogScreen.styles';
-import SessionHeaderCard from '../components/log/SessionHeaderCard';
-import StatCardCarousel from '../components/log/StatCardCarousel';
 import GradeSystemBar from '../components/log/GradeSystemBar';
 import BoulderCard from '../components/log/BoulderCard';
-import { buildSessionStats } from '../utils/sessionStats';
 import { showAlert } from '../../../shared/utils/alert';
 import DatePickerField from '../../../shared/components/DatePickerField';
 
@@ -147,7 +144,7 @@ export default function LogScreen() {
   const gradeSummary = aggregateBoulders(boulders);
 
   const normalizedSystemId = gradeSystem === 'V' ? 'vscale' : gradeSystem === 'Font' ? 'font' : (gradeSystem as string);
-  const stats = buildSessionStats(boulders, gradeSystem);
+
   return (
     <View style={styles.screenContainer}>
       <KeyboardAwareScrollView
@@ -157,14 +154,6 @@ export default function LogScreen() {
         enableAutomaticScroll={true}
         extraScrollHeight={120}
       >
-        <SessionHeaderCard
-          date={date}
-          onPressDate={() => {
-            /* native date open handled by DatePickerField now */
-          }}
-        >
-          <StatCardCarousel stats={stats} />
-        </SessionHeaderCard>
         <DatePickerField date={dateObj} onChange={handleDateChange} maximumDate={new Date()} label="Date" />
         <Text style={styles.sectionLabel}>Session Duration (minutes)</Text>
         <TextInput
