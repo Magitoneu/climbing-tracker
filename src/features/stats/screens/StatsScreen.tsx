@@ -15,7 +15,7 @@ import type { Session } from '../../sessions/models/Session';
 import MonthlyHeroCard from '../components/MonthlyHeroCard';
 import GradeProgressChart from '../components/GradeProgressChart';
 import FlashRateRing from '../components/FlashRateRing';
-import VolumeChart from '../components/VolumeChart';
+import VolumeCard from '../components/VolumeCard';
 import GradePyramid from '../components/GradePyramid';
 import PersonalBestsCard from '../components/PersonalBestsCard';
 
@@ -110,7 +110,7 @@ export default function StatsScreen() {
 
       {/* Grade Progression Chart */}
       <View style={styles.section}>
-        <GradeProgressChart data={stats.weeklyGrades} />
+        <GradeProgressChart data={stats.monthlyGrades} />
       </View>
 
       {/* Flash Rate + Volume (side by side) */}
@@ -121,7 +121,7 @@ export default function StatsScreen() {
           totalProblems={stats.thisMonth.totalProblems}
           flashes={stats.thisMonth.flashes}
         />
-        <VolumeChart data={stats.weeklyVolume} />
+        <VolumeCard totalProblems={stats.thisMonth.totalProblems} trend={stats.trends.problems} />
       </View>
 
       {/* Grade Distribution Pyramid */}

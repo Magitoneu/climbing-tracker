@@ -3,9 +3,16 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { PieChart } from 'react-native-gifted-charts';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { colors, borderRadius, shadows, semantic, stone } from '../../../shared/design/theme';
+import { SimpleDonutChart } from './charts';
+
+// Only import charts on native (crashes on web)
+let PieChart: any = null;
+if (Platform.OS !== 'web') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  PieChart = require('react-native-gifted-charts').PieChart;
+}
 import { typography } from '../../../shared/design/typography';
 import { spacing } from '../../../shared/design/spacing';
 import StatTrendIndicator from './StatTrendIndicator';
@@ -43,6 +50,34 @@ export const FlashRateRing: React.FC<Props> = ({ flashRate, trend, totalProblems
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>-</Text>
         </View>
+      </View>
+    );
+  }
+
+  // Web fallback using SimpleDonutChart
+  if (Platform.OS === 'web' || !PieChart) {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.title}>FLASH RATE</Text>
+        <View style={styles.chartContainer}>
+          <SimpleDonutChart
+            percentage={percentage}
+            size={110}
+            strokeWidth={15}
+            primaryColor={semantic.flash}
+            secondaryColor={stone.slate}
+            centerLabel={`${percentage}%`}
+          />
+        </View>
+        <Text style={styles.detailText}>
+          {flashes} of {totalProblems} flashed
+        </Text>
+        {trend && (
+          <View style={styles.trendContainer}>
+            <Text style={styles.vsLastMonth}>vs last month</Text>
+            <StatTrendIndicator trend={trend} size="small" />
+          </View>
+        )}
       </View>
     );
   }

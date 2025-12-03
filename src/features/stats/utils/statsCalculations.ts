@@ -26,6 +26,14 @@ export interface WeeklyGradeData {
   maxGrade: string;
 }
 
+export interface MonthlyGradeData {
+  month: string; // Short month name (e.g., "Jan", "Feb")
+  year: number;
+  monthIndex: number; // 0-11
+  maxCanonical: number;
+  maxGrade: string;
+}
+
 export interface VolumeDataPoint {
   week: string;
   weekStart: Date;
@@ -180,6 +188,7 @@ export function calculateMonthStats(sessions: Session[]): MonthStats {
 
 /**
  * Calculate weekly max grade data for line chart.
+ * @deprecated Use calculateMonthlyGrades instead for grade progression
  */
 export function calculateWeeklyGrades(sessions: Session[], weeks: number = 12): WeeklyGradeData[] {
   const now = new Date();
@@ -209,6 +218,51 @@ export function calculateWeeklyGrades(sessions: Session[], weeks: number = 12): 
       if (cv > weekData.maxCanonical) {
         weekData.maxCanonical = cv;
         weekData.maxGrade = attempt.grade;
+      }
+    }
+  }
+
+  return result;
+}
+
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/**
+ * Calculate monthly max grade data for line chart.
+ * Shows grade progression over the last N months.
+ */
+export function calculateMonthlyGrades(sessions: Session[], months: number = 12): MonthlyGradeData[] {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const result: MonthlyGradeData[] = [];
+
+  // Generate month buckets (oldest first)
+  for (let i = months - 1; i >= 0; i--) {
+    const date = new Date(currentYear, currentMonth - i, 1);
+    result.push({
+      month: MONTH_NAMES[date.getMonth()],
+      year: date.getFullYear(),
+      monthIndex: date.getMonth(),
+      maxCanonical: -1,
+      maxGrade: '',
+    });
+  }
+
+  // Fill in max grades for each month
+  for (const session of sessions) {
+    const sessionDate = parseDate(session.date);
+    const sessionYear = sessionDate.getFullYear();
+    const sessionMonth = sessionDate.getMonth();
+
+    const monthData = result.find(m => m.year === sessionYear && m.monthIndex === sessionMonth);
+    if (!monthData) continue;
+
+    for (const attempt of session.attempts || []) {
+      const cv = getCanonicalValue(attempt);
+      if (cv > monthData.maxCanonical) {
+        monthData.maxCanonical = cv;
+        monthData.maxGrade = attempt.grade;
       }
     }
   }

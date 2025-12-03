@@ -1,10 +1,10 @@
 /**
  * Horizontal bar chart showing grade distribution.
+ * Uses native Views for reliable cross-platform layout.
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { BarChart } from 'react-native-gifted-charts';
+import { View, Text, StyleSheet } from 'react-native';
 import { colors, borderRadius, shadows, semantic } from '../../../shared/design/theme';
 import { typography } from '../../../shared/design/typography';
 import { spacing } from '../../../shared/design/spacing';
@@ -13,8 +13,6 @@ import type { GradeDistribution } from '../utils/statsCalculations';
 interface Props {
   data: GradeDistribution[];
 }
-
-const CHART_WIDTH = Dimensions.get('window').width - spacing.lg * 2 - spacing.md * 2;
 
 export const GradePyramid: React.FC<Props> = ({ data }) => {
   if (data.length === 0) {
@@ -28,26 +26,9 @@ export const GradePyramid: React.FC<Props> = ({ data }) => {
     );
   }
 
-  // Create stacked bar data for each grade
-  // Each bar shows flashed (gold) + non-flashed (primary)
-  const chartData = data.map(d => ({
-    value: d.total,
-    label: d.grade,
-    frontColor: colors.primary,
-    // Stacked portion for flashes
-    stacks: [
-      {
-        value: d.flashed,
-        color: semantic.flash,
-      },
-      {
-        value: d.total - d.flashed,
-        color: colors.primary,
-      },
-    ],
-  }));
-
   const maxValue = Math.max(...data.map(d => d.total), 1);
+  const totalSends = data.reduce((sum, d) => sum + d.total, 0);
+  const totalFlashes = data.reduce((sum, d) => sum + d.flashed, 0);
 
   return (
     <View style={styles.card}>
@@ -55,53 +36,59 @@ export const GradePyramid: React.FC<Props> = ({ data }) => {
       <Text style={styles.subtitle}>This month&apos;s sends by grade</Text>
 
       <View style={styles.chartContainer}>
-        <BarChart
-          data={chartData}
-          width={CHART_WIDTH - 60}
-          height={Math.max(data.length * 32, 120)}
-          horizontal
-          barWidth={20}
-          spacing={8}
-          initialSpacing={4}
-          noOfSections={4}
-          maxValue={maxValue + 1}
-          yAxisThickness={0}
-          xAxisThickness={1}
-          xAxisColor={colors.border}
-          hideRules
-          showYAxisIndices={false}
-          yAxisLabelWidth={40}
-          yAxisTextStyle={styles.gradeLabel}
-          xAxisLabelTextStyle={styles.axisLabel}
-          barBorderRadius={4}
-          isAnimated
-          animationDuration={500}
-          renderTooltip={(item: any) => (
-            <View style={styles.tooltip}>
-              <Text style={styles.tooltipText}>{item.value} sends</Text>
+        {data.map(d => {
+          const flashedWidth = (d.flashed / maxValue) * 100;
+          const sentWidth = ((d.total - d.flashed) / maxValue) * 100;
+
+          return (
+            <View key={d.grade} style={styles.row}>
+              <Text style={styles.gradeLabel}>{d.grade}</Text>
+              <View style={styles.barContainer}>
+                {d.flashed > 0 && <View style={[styles.barFlashed, { width: `${flashedWidth}%` }]} />}
+                {d.total - d.flashed > 0 && <View style={[styles.barSent, { width: `${sentWidth}%` }]} />}
+              </View>
+              <Text style={styles.countLabel}>{d.total}</Text>
             </View>
-          )}
-        />
+          );
+        })}
       </View>
 
-      <View style={styles.legend}>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: semantic.flash }]} />
-          <Text style={styles.legendText}>Flashed</Text>
+      <View style={styles.footer}>
+        <View style={styles.legend}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: semantic.flash }]} />
+            <Text style={styles.legendText}>Flashed</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+            <Text style={styles.legendText}>Sent</Text>
+          </View>
         </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-          <Text style={styles.legendText}>Sent</Text>
-        </View>
+        <Text style={styles.totalText}>
+          {totalSends} sends • {totalFlashes} flashed
+        </Text>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  axisLabel: {
-    ...typography.label,
-    color: colors.textSecondary,
+  barContainer: {
+    backgroundColor: colors.border,
+    borderRadius: borderRadius.sm,
+    flex: 1,
+    flexDirection: 'row',
+    height: 20,
+    marginHorizontal: spacing.sm,
+    overflow: 'hidden',
+  },
+  barFlashed: {
+    backgroundColor: semantic.flash,
+    height: '100%',
+  },
+  barSent: {
+    backgroundColor: colors.primary,
+    height: '100%',
   },
   card: {
     backgroundColor: colors.surface,
@@ -110,8 +97,14 @@ const styles = StyleSheet.create({
     ...shadows.md,
   },
   chartContainer: {
-    alignItems: 'center',
-    marginTop: spacing.sm,
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  countLabel: {
+    ...typography.captionBold,
+    color: colors.text,
+    minWidth: 24,
+    textAlign: 'right',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -121,16 +114,20 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
   },
+  footer: {
+    alignItems: 'center',
+    marginTop: spacing.md,
+  },
   gradeLabel: {
     ...typography.grade,
     color: colors.text,
-    fontSize: 12,
+    fontSize: 13,
+    minWidth: 36,
   },
   legend: {
     flexDirection: 'row',
     gap: spacing.md,
     justifyContent: 'center',
-    marginTop: spacing.md,
   },
   legendDot: {
     borderRadius: 4,
@@ -146,6 +143,10 @@ const styles = StyleSheet.create({
     ...typography.label,
     color: colors.textSecondary,
   },
+  row: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
   subtitle: {
     ...typography.caption,
     color: colors.textSecondary,
@@ -155,15 +156,10 @@ const styles = StyleSheet.create({
     ...typography.overline,
     color: colors.textSecondary,
   },
-  tooltip: {
-    backgroundColor: colors.text,
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  tooltipText: {
-    ...typography.captionBold,
-    color: colors.surface,
+  totalText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
   },
 });
 

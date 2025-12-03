@@ -2,7 +2,7 @@
  * Styles for StatsScreen.
  */
 
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { colors, borderRadius } from '../../../shared/design/theme';
 import { typography } from '../../../shared/design/typography';
 import { spacing } from '../../../shared/design/spacing';
@@ -16,6 +16,14 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
+    // Center content on web with max width for better readability
+    ...(Platform.OS === 'web'
+      ? {
+          alignSelf: 'center',
+          maxWidth: 600,
+          width: '100%',
+        }
+      : {}),
     padding: spacing.lg,
   },
   ctaButton: {

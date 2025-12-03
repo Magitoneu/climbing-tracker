@@ -6,16 +6,13 @@ import { useMemo } from 'react';
 import type { Session } from '../../sessions/models/Session';
 import {
   getSessionsForMonth,
-  getSessionsForWeeks,
   calculateMonthStats,
-  calculateWeeklyGrades,
-  calculateWeeklyVolume,
+  calculateMonthlyGrades,
   calculateGradeDistribution,
   calculatePersonalBests,
   calculateTrend,
   type MonthStats,
-  type WeeklyGradeData,
-  type VolumeDataPoint,
+  type MonthlyGradeData,
   type GradeDistribution,
   type PersonalBests,
   type TrendResult,
@@ -32,8 +29,7 @@ export interface StatsData {
   };
 
   // Chart data
-  weeklyGrades: WeeklyGradeData[];
-  weeklyVolume: VolumeDataPoint[];
+  monthlyGrades: MonthlyGradeData[];
   gradeDistribution: GradeDistribution[];
 
   // Personal bests
@@ -66,9 +62,6 @@ export function useStatsData(sessions: Session[], isLoading: boolean = false): S
     const thisMonthSessions = getSessionsForMonth(sessions, thisYear, thisMonth);
     const lastMonthSessions = getSessionsForMonth(sessions, lastYear, lastMonth);
 
-    // Get sessions for weekly charts (last 12 weeks for grades, 8 for volume)
-    const recentSessions = getSessionsForWeeks(sessions, 12);
-
     // Calculate monthly stats
     const thisMonthStats = calculateMonthStats(thisMonthSessions);
     const lastMonthStats = calculateMonthStats(lastMonthSessions);
@@ -78,9 +71,8 @@ export function useStatsData(sessions: Session[], isLoading: boolean = false): S
     const problemsTrend = calculateTrend(thisMonthStats.totalProblems, lastMonthStats.totalProblems);
     const flashRateTrend = calculateTrend(thisMonthStats.flashRate, lastMonthStats.flashRate);
 
-    // Calculate chart data
-    const weeklyGrades = calculateWeeklyGrades(recentSessions, 12);
-    const weeklyVolume = calculateWeeklyVolume(recentSessions, 8);
+    // Calculate chart data (monthly for grade progression)
+    const monthlyGrades = calculateMonthlyGrades(sessions, 12);
     const gradeDistribution = calculateGradeDistribution(thisMonthSessions);
 
     // Calculate personal bests
@@ -94,8 +86,7 @@ export function useStatsData(sessions: Session[], isLoading: boolean = false): S
         problems: problemsTrend,
         flashRate: flashRateTrend,
       },
-      weeklyGrades,
-      weeklyVolume,
+      monthlyGrades,
       gradeDistribution,
       personalBests,
       hasData: sessions.length > 0,
