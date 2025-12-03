@@ -4,17 +4,17 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   Keyboard,
   Modal,
   Pressable,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { styles } from './BoulderModal.styles';
 import GradeSelector from '../../grades/components/GradeSelector';
 import FlashedToggle from '../../../shared/components/FlashedToggle';
 import { getGradeSystem } from '../../grades/services/gradeSystemService';
 
-import type { Boulder } from '../models/Boulder';
 interface BoulderModalProps {
   visible: boolean;
   onClose: () => void;
@@ -49,7 +49,7 @@ const BoulderModal: React.FC<BoulderModalProps> = ({ visible, onClose, onSave, g
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         {/* Backdrop catcher: only captures taps outside the modal container */}
         <Pressable onPress={Keyboard.dismiss} style={styles.backdrop} />
         <View style={styles.modalContainer}>
@@ -80,7 +80,7 @@ const BoulderModal: React.FC<BoulderModalProps> = ({ visible, onClose, onSave, g
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

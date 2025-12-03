@@ -1,10 +1,13 @@
 import { StyleSheet } from 'react-native';
+import { colors, borderRadius, shadows } from '../../../shared/design/theme';
+import { typography } from '../../../shared/design/typography';
+import { spacing } from '../../../shared/design/spacing';
 
 export const styles = StyleSheet.create({
   attemptsRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    marginVertical: 16,
+    marginVertical: spacing.md,
   },
   backdrop: {
     bottom: 0,
@@ -16,64 +19,64 @@ export const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
   buttonText: {
-    color: '#222',
-    fontSize: 16,
-    fontWeight: 'bold',
+    ...typography.button,
+    color: colors.text,
     textAlign: 'center',
   },
   buttonTextWhite: {
-    color: 'white',
+    color: colors.textOnPrimary,
   },
   cancelButton: {
-    backgroundColor: '#eee',
-    borderRadius: 8,
-    marginRight: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.md,
+    marginRight: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
   disabledButton: {
-    backgroundColor: '#aaa',
+    backgroundColor: colors.disabled,
   },
   input: {
-    backgroundColor: '#f9f9f9',
-    borderColor: '#ccc',
-    borderRadius: 8,
+    ...typography.body,
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
-    fontSize: 16,
-    marginRight: 8,
-    padding: 8,
+    marginRight: spacing.sm,
+    padding: spacing.sm,
     textAlign: 'center',
     width: 60,
   },
   label: {
-    fontSize: 16,
-    marginRight: 8,
+    ...typography.body,
+    color: colors.text,
+    marginRight: spacing.sm,
   },
   modalContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    elevation: 5,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
     maxWidth: 400,
-    padding: 24,
+    padding: spacing.lg,
     width: '90%',
+    ...shadows.lg,
   },
   overlay: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: colors.overlay,
     flex: 1,
     justifyContent: 'center',
   },
   saveButton: {
-    backgroundColor: '#2563eb',
-    marginLeft: 8,
+    backgroundColor: colors.primary,
+    marginLeft: spacing.sm,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
+    ...typography.h3,
+    color: colors.text,
+    marginBottom: spacing.md,
     textAlign: 'center',
   },
 });

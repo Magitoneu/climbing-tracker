@@ -1,5 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { colors, borderRadius, shadows } from '../../../../shared/design/theme';
+import { typography } from '../../../../shared/design/typography';
+import { spacing } from '../../../../shared/design/spacing';
 
 interface Props {
   date: string;
@@ -23,19 +26,30 @@ export const SessionHeaderCard: React.FC<Props> = ({ date, onPressDate, children
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    elevation: 3,
-    marginBottom: 8,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    ...shadows.md,
   },
-  datePill: { backgroundColor: '#2563EB15', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
-  dateText: { color: '#1E3A8A', fontSize: 16, fontWeight: '600' },
-  row: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  statsContainer: { marginTop: 12 },
+  datePill: {
+    backgroundColor: `${colors.primary}20`,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  dateText: {
+    ...typography.bodyBold,
+    color: colors.primary,
+  },
+  row: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  statsContainer: {
+    marginTop: spacing.sm,
+  },
 });
 
 export default SessionHeaderCard;

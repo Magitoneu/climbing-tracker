@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, gradeColors } from '../../../shared/theme';
+import { colors, borderRadius, shadows } from '../../../shared/design/theme';
+import { typography } from '../../../shared/design/typography';
+import { spacing } from '../../../shared/design/spacing';
 import { getAllGradeSystems } from '../../grades/services/gradeSystemService';
 
-import type { Boulder } from '../models/Boulder';
 interface BoulderPillProps {
   grade: string;
   flash: number;
@@ -13,7 +14,8 @@ interface BoulderPillProps {
 }
 
 export default function BoulderPill({ grade, flash, total, systemId }: BoulderPillProps) {
-  let gradeColor = gradeColors[grade] || '#888';
+  // Get grade color from system or fall back to primary
+  let gradeColor: string = colors.primary;
   if (systemId) {
     const sys = getAllGradeSystems().find(s => s.id === systemId);
     const c = sys?.grades.find(g => g.label === grade)?.color;
@@ -27,7 +29,7 @@ export default function BoulderPill({ grade, flash, total, systemId }: BoulderPi
           <View style={[styles.colorDot, { backgroundColor: gradeColor }]} />
         </View>
         <View style={styles.statsRow}>
-          <Text style={[styles.stat, { color: flash > 0 ? colors.flash : styles.stat.color }]}>{flash} Flash</Text>
+          <Text style={[styles.stat, flash > 0 && styles.statFlash]}>{flash} Flash</Text>
           <Text style={styles.stat}>{total} Done</Text>
         </View>
       </View>
@@ -37,37 +39,36 @@ export default function BoulderPill({ grade, flash, total, systemId }: BoulderPi
 
 const styles = StyleSheet.create({
   colorDot: {
-    borderColor: '#fff',
-    borderRadius: 8,
+    borderColor: colors.surface,
+    borderRadius: spacing.sm,
     borderWidth: 2,
     height: 16,
-    marginLeft: 8,
+    marginLeft: spacing.sm,
     width: 16,
   },
   grade: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 2,
+    ...typography.grade,
+    color: colors.text,
+    marginBottom: spacing.xxs,
   },
   gradeRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   pill: {
     alignItems: 'center',
-    backgroundColor: '#222',
-    borderColor: '#444',
-    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: borderRadius.xl,
     borderWidth: 1,
-    elevation: 2,
     flexDirection: 'row',
-    margin: 6,
+    margin: spacing.xs,
     maxWidth: 200,
     minWidth: 140,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    ...shadows.sm,
   },
   pillContent: {
     alignItems: 'flex-start',
@@ -75,13 +76,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stat: {
-    color: '#ccc',
-    fontSize: 13,
-    fontWeight: '600',
-    marginHorizontal: 2,
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginHorizontal: spacing.xxs,
+  },
+  statFlash: {
+    color: colors.flash,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: spacing.sm,
   },
 });

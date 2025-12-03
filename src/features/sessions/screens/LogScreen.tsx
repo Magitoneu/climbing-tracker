@@ -10,7 +10,7 @@ import { convertGrade } from '../../grades/models/gradeConversion';
 import store from '../../../storage/simpleStore';
 import { addSession } from '../services/sessionService';
 import { auth } from '../../../config/firebase';
-import { colors } from '../../../shared/theme';
+import { colors } from '../../../shared/design/theme';
 import BoulderPill from '../components/BoulderPill';
 import BoulderModal from '../components/BoulderModal';
 import styles from './LogScreen.styles';

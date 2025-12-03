@@ -9,7 +9,9 @@ import {
   useWindowDimensions,
   Animated,
 } from 'react-native';
-import { colors } from '../../../../shared/theme';
+import { colors, borderRadius } from '../../../../shared/design/theme';
+import { typography } from '../../../../shared/design/typography';
+import { spacing } from '../../../../shared/design/spacing';
 import { GradeSystemDefinition } from '../../../grades/models/GradeSystem';
 
 interface Props {
@@ -52,9 +54,9 @@ export const GradeSystemBar: React.FC<Props> = ({ systems, activeId, onChange, v
       {systems.map(sys => {
         const isSelected = activeId === sys.id;
         const firstColor = sys.grades.find(g => !!g.color)?.color;
-        const bg = isSelected ? firstColor || colors.primary : '#FFFFFF';
-        const borderColor = isSelected ? firstColor || colors.primary : '#CBD5E1';
-        const textColor = isSelected ? '#fff' : '#1E293B';
+        const bg = isSelected ? firstColor || colors.primary : colors.surface;
+        const pillBorderColor = isSelected ? firstColor || colors.primary : colors.border;
+        const textColor = isSelected ? colors.textOnPrimary : colors.text;
         const scale = scales.get(sys.id)!;
         return (
           <Animated.View key={sys.id} style={[styles.animatedPill, { transform: [{ scale }] }]}>
@@ -64,7 +66,7 @@ export const GradeSystemBar: React.FC<Props> = ({ systems, activeId, onChange, v
               style={[
                 styles.pill,
                 variant === 'compact' && styles.pillCompact,
-                { backgroundColor: bg, borderColor, maxWidth: maxPillWidth },
+                { backgroundColor: bg, borderColor: pillBorderColor, maxWidth: maxPillWidth },
               ]}
             >
               <Text
@@ -103,51 +105,71 @@ export const GradeSystemBar: React.FC<Props> = ({ systems, activeId, onChange, v
 
 const styles = StyleSheet.create({
   animatedPill: {
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
-  container: { paddingHorizontal: 4 },
+  container: { paddingHorizontal: spacing.xs },
   containerCompact: {
     paddingHorizontal: 0,
   },
-  divider: { backgroundColor: '#E2E8F0', bottom: 0, height: 1, left: 0, position: 'absolute', right: 0 },
+  divider: {
+    backgroundColor: colors.divider,
+    bottom: 0,
+    height: 1,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+  },
   fadeLeft: {
-    backgroundColor: 'linear-gradient(90deg, #F1F5F9 0%, rgba(241,245,249,0) 100%)',
+    backgroundColor: `linear-gradient(90deg, ${colors.background} 0%, transparent 100%)`,
     bottom: 0,
     left: 0,
     position: 'absolute',
     top: 0,
-    width: 12,
+    width: spacing.sm,
   },
   fadeRight: {
-    backgroundColor: 'linear-gradient(270deg, #F1F5F9 0%, rgba(241,245,249,0) 100%)',
+    backgroundColor: `linear-gradient(270deg, ${colors.background} 0%, transparent 100%)`,
     bottom: 0,
     position: 'absolute',
     right: 0,
     top: 0,
-    width: 12,
+    width: spacing.sm,
   },
-  inlineRow: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', marginBottom: 4 },
+  inlineRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: spacing.xs,
+  },
   inlineRowCompact: {
-    marginBottom: 2,
+    marginBottom: spacing.xxs,
   },
   pill: {
     alignSelf: 'flex-start',
-    borderRadius: 24,
+    borderRadius: borderRadius.full,
     borderWidth: 1,
     flexGrow: 0,
     flexShrink: 0,
-    marginRight: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    marginRight: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
-  pillCompact: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6 },
-  scroll: { marginBottom: 4 },
+  pillCompact: {
+    borderRadius: borderRadius.xl,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  scroll: { marginBottom: spacing.xs },
   spacer: {
-    width: 4,
+    width: spacing.xs,
   },
-  text: { fontSize: 14, fontWeight: '600' },
-  textCompact: { fontSize: 13 },
-  wrapper: { marginBottom: 4, position: 'relative' },
+  text: {
+    ...typography.captionBold,
+  },
+  textCompact: {
+    ...typography.caption,
+  },
+  wrapper: { marginBottom: spacing.xs, position: 'relative' },
 });
 
 export default GradeSystemBar;

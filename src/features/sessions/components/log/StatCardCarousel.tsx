@@ -1,5 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { colors, borderRadius } from '../../../../shared/design/theme';
+import { typography } from '../../../../shared/design/typography';
+import { spacing } from '../../../../shared/design/spacing';
 import type { SessionStats } from '../../utils/sessionStats';
 
 interface Props {
@@ -30,16 +33,25 @@ export const StatCardCarousel: React.FC<Props> = ({ stats }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#F1F5F9',
-    borderRadius: 12,
-    marginRight: 8,
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.md,
+    marginRight: spacing.sm,
     minWidth: 84,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
-  label: { color: '#475569', fontSize: 11, fontWeight: '500', letterSpacing: 0.3, marginTop: 2 },
-  row: { paddingRight: 4 },
-  value: { color: '#0F172A', fontSize: 18, fontWeight: '600' },
+  label: {
+    ...typography.label,
+    color: colors.textSecondary,
+    marginTop: spacing.xxs,
+  },
+  row: {
+    paddingRight: spacing.xs,
+  },
+  value: {
+    ...typography.numericSmall,
+    color: colors.primary,
+  },
 });
 
 export default StatCardCarousel;
