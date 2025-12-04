@@ -8,6 +8,8 @@ import {
   getSessionsForMonth,
   calculateMonthStats,
   calculateMonthlyGrades,
+  calculateAllMonthlyGrades,
+  calculateSessionDateRange,
   calculateGradeDistribution,
   calculatePersonalBests,
   calculateTrend,
@@ -29,7 +31,8 @@ export interface StatsData {
   };
 
   // Chart data
-  monthlyGrades: MonthlyGradeData[];
+  monthlyGrades: MonthlyGradeData[]; // Last 12 months (quick stats)
+  allMonthlyGrades: MonthlyGradeData[]; // Full history (scrollable chart)
   gradeDistribution: GradeDistribution[];
 
   // Personal bests
@@ -38,6 +41,7 @@ export interface StatsData {
   // Meta
   hasData: boolean;
   isLoading: boolean;
+  historyMonths: number; // Total months of climbing history
 }
 
 /**
@@ -73,6 +77,8 @@ export function useStatsData(sessions: Session[], isLoading: boolean = false): S
 
     // Calculate chart data (monthly for grade progression)
     const monthlyGrades = calculateMonthlyGrades(sessions, 12);
+    const allMonthlyGrades = calculateAllMonthlyGrades(sessions);
+    const { monthCount: historyMonths } = calculateSessionDateRange(sessions);
     const gradeDistribution = calculateGradeDistribution(thisMonthSessions);
 
     // Calculate personal bests
@@ -87,10 +93,12 @@ export function useStatsData(sessions: Session[], isLoading: boolean = false): S
         flashRate: flashRateTrend,
       },
       monthlyGrades,
+      allMonthlyGrades,
       gradeDistribution,
       personalBests,
       hasData: sessions.length > 0,
       isLoading,
+      historyMonths,
     };
   }, [sessions, isLoading]);
 }

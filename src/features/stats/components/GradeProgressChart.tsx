@@ -1,15 +1,17 @@
 /**
  * Line chart showing grade progression over time.
+ * Supports horizontal scrolling for viewing all historical data.
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Platform, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, borderRadius, shadows } from '../../../shared/design/theme';
 import { typography } from '../../../shared/design/typography';
 import { spacing } from '../../../shared/design/spacing';
 import type { MonthlyGradeData } from '../utils/statsCalculations';
 import { canonicalToGrade } from '../utils/statsCalculations';
-import { SimpleLineChart } from './charts';
+import { ScrollableLineChart } from './charts';
 
 // Only import gifted-charts on native (crashes on web)
 let LineChart: any = null;
@@ -21,27 +23,81 @@ if (Platform.OS !== 'web') {
 // Max canonical grade value (V17 = 17)
 const MAX_GRADE = 17;
 
+// Fixed spacing per data point for scrollable chart
+const SPACING_PER_MONTH = 50;
+
 interface Props {
   data: MonthlyGradeData[];
+  historyMonths?: number;
 }
 
-// Calculate chart width accounting for screen padding, card padding, and Y-axis labels
-const getChartWidth = () => {
+// Calculate chart width for scrollable view
+const getScrollableWidth = (dataPointCount: number): number => {
+  const minWidth = 300;
+  return Math.max(dataPointCount * SPACING_PER_MONTH, minWidth);
+};
+
+// Calculate visible chart width (viewport)
+const getViewportWidth = () => {
   const screenWidth = Dimensions.get('window').width;
-  const screenPadding = spacing.lg * 2; // StatsScreen contentContainer padding
-  const cardPadding = spacing.md * 2; // Card internal padding
-  const yAxisSpace = 50; // Space for Y-axis labels
+  const screenPadding = spacing.lg * 2;
+  const cardPadding = spacing.md * 2;
+  const yAxisSpace = 50;
   return screenWidth - screenPadding - cardPadding - yAxisSpace;
 };
 
-export const GradeProgressChart: React.FC<Props> = ({ data }) => {
-  // Filter out months with no data and transform for chart
-  const filteredData = data.filter(d => d.maxCanonical >= 0);
+// Generate dynamic subtitle based on history length
+const getSubtitle = (months: number): string => {
+  if (months <= 1) return 'Max grade this month';
+  if (months <= 12) return `Max grade per month (${months} months)`;
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  if (remainingMonths === 0) return `Max grade per month (${years} year${years > 1 ? 's' : ''})`;
+  return `Max grade per month (${years}+ years)`;
+};
+
+// Determine label interval based on data length
+const getLabelInterval = (dataLength: number): number => {
+  if (dataLength > 36) return 6; // Every 6 months for 3+ years
+  if (dataLength > 24) return 4; // Every 4 months for 2-3 years
+  if (dataLength > 12) return 3; // Every 3 months for 1-2 years
+  return 1; // Every month for < 1 year
+};
+
+// Check if label should be shown at this index
+const shouldShowLabel = (index: number, dataLength: number, monthIndex: number, interval: number): boolean => {
+  // Always show first and last
+  if (index === 0 || index === dataLength - 1) return true;
+  // Always show January (year boundary)
+  if (monthIndex === 0) return true;
+  // Show at regular intervals
+  return index % interval === 0;
+};
+
+// Format label with year for previous years (e.g., "Jan/24")
+const formatLabel = (month: string, year: number): string => {
+  const currentYear = new Date().getFullYear();
+  if (year === currentYear) {
+    return month;
+  }
+  // Show last 2 digits of year
+  return `${month}/${String(year).slice(-2)}`;
+};
+
+export const GradeProgressChart: React.FC<Props> = ({ data, historyMonths }) => {
+  // Filter out months with no data and reverse so newest is first (left)
+  const filteredData = data.filter(d => d.maxCanonical >= 0).reverse();
+  const totalMonths = historyMonths || data.length;
+  const labelInterval = getLabelInterval(filteredData.length);
+
+  // Transform data for chart with smart labels
   const chartData = filteredData.map((d, index, arr) => ({
     value: d.maxCanonical,
-    // Show month name for first, last, and every 3rd month for readability
-    label: index === 0 || index === arr.length - 1 || index % 3 === 0 ? d.month : '',
+    label: shouldShowLabel(index, arr.length, d.monthIndex, labelInterval) ? formatLabel(d.month, d.year) : '',
     dataPointText: d.maxGrade,
+    month: d.month,
+    year: d.year,
+    monthIndex: d.monthIndex,
   }));
 
   // If no data, show placeholder
@@ -62,24 +118,37 @@ export const GradeProgressChart: React.FC<Props> = ({ data }) => {
   const minVal = Math.max(0, Math.min(...values) - 1);
   const maxVal = Math.min(MAX_GRADE, Math.max(...values) + 1);
 
-  // Get dynamic chart width
-  const chartWidth = getChartWidth();
+  // Calculate widths
+  const viewportWidth = getViewportWidth();
+  const scrollableWidth = getScrollableWidth(chartData.length);
+  const needsScroll = scrollableWidth > viewportWidth;
 
-  // Web fallback using SimpleLineChart
+  // Web fallback using ScrollableLineChart
   if (Platform.OS === 'web' || !LineChart) {
     const webChartData = filteredData.map((d, i, arr) => ({
       value: Math.min(d.maxCanonical, MAX_GRADE),
-      label: i === 0 || i === arr.length - 1 ? d.month : undefined,
+      label: shouldShowLabel(i, arr.length, d.monthIndex, labelInterval) ? formatLabel(d.month, d.year) : undefined,
+      month: d.month,
+      year: d.year,
     }));
 
     return (
       <View style={styles.card}>
-        <Text style={styles.title}>GRADE PROGRESSION</Text>
-        <Text style={styles.subtitle}>Max grade per month (last 12 months)</Text>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>GRADE PROGRESSION</Text>
+            <Text style={styles.subtitle}>{getSubtitle(totalMonths)}</Text>
+          </View>
+          {needsScroll && (
+            <View style={styles.scrollHint}>
+              <Ionicons name="arrow-back" size={12} color={colors.textSecondary} />
+              <Text style={styles.scrollHintText}>History</Text>
+            </View>
+          )}
+        </View>
         <View style={styles.chartContainer}>
-          <SimpleLineChart
+          <ScrollableLineChart
             data={webChartData}
-            width={Math.min(chartWidth + 50, 600)}
             height={200}
             minValue={minVal}
             maxValue={maxVal}
@@ -100,17 +169,33 @@ export const GradeProgressChart: React.FC<Props> = ({ data }) => {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>GRADE PROGRESSION</Text>
-      <Text style={styles.subtitle}>Max grade per month (last 12 months)</Text>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>GRADE PROGRESSION</Text>
+          <Text style={styles.subtitle}>{getSubtitle(totalMonths)}</Text>
+        </View>
+        {needsScroll && (
+          <View style={styles.scrollHint}>
+            <Ionicons name="arrow-back" size={12} color={colors.textSecondary} />
+            <Text style={styles.scrollHintText}>History</Text>
+          </View>
+        )}
+      </View>
 
-      <View style={styles.chartContainer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         <LineChart
           data={cappedChartData}
-          width={chartWidth}
+          width={scrollableWidth}
           height={180}
-          spacing={(chartWidth - 40) / Math.max(chartData.length - 1, 1)}
+          spacing={SPACING_PER_MONTH}
           initialSpacing={20}
           endSpacing={20}
+          disableScroll
           color={colors.primary}
           thickness={3}
           hideDataPoints={false}
@@ -134,24 +219,8 @@ export const GradeProgressChart: React.FC<Props> = ({ data }) => {
           formatYLabel={(val: string) => canonicalToGrade(Number(val))}
           hideRules={false}
           showVerticalLines={false}
-          pointerConfig={{
-            pointerStripHeight: 160,
-            pointerStripColor: colors.border,
-            pointerStripWidth: 2,
-            pointerColor: colors.primary,
-            radius: 6,
-            pointerLabelWidth: 80,
-            pointerLabelHeight: 30,
-            pointerLabelComponent: (items: any) => {
-              return (
-                <View style={styles.tooltip}>
-                  <Text style={styles.tooltipText}>{items[0]?.dataPointText || canonicalToGrade(items[0]?.value)}</Text>
-                </View>
-              );
-            },
-          }}
         />
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -169,10 +238,8 @@ const styles = StyleSheet.create({
     ...shadows.md,
   },
   chartContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: spacing.sm,
-    width: '100%',
+    overflow: 'hidden',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -187,6 +254,27 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
   },
+  header: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  scrollContent: {
+    paddingRight: spacing.md,
+  },
+  scrollHint: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xxs,
+    opacity: 0.7,
+  },
+  scrollHintText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  scrollView: {
+    marginTop: spacing.sm,
+  },
   subtitle: {
     ...typography.caption,
     color: colors.textSecondary,
@@ -195,16 +283,6 @@ const styles = StyleSheet.create({
   title: {
     ...typography.overline,
     color: colors.textSecondary,
-  },
-  tooltip: {
-    backgroundColor: colors.text,
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  tooltipText: {
-    ...typography.captionBold,
-    color: colors.surface,
   },
 });
 

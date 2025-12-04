@@ -110,7 +110,7 @@ export default function StatsScreen() {
 
       {/* Grade Progression Chart */}
       <View style={styles.section}>
-        <GradeProgressChart data={stats.monthlyGrades} />
+        <GradeProgressChart data={stats.allMonthlyGrades} historyMonths={stats.historyMonths} />
       </View>
 
       {/* Flash Rate + Volume (side by side) */}

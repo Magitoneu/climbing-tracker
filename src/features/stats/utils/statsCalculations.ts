@@ -92,7 +92,7 @@ function formatWeekLabel(date: Date): string {
 /**
  * Parse an ISO date string to a Date object.
  */
-function parseDate(dateStr: string): Date {
+export function parseDate(dateStr: string): Date {
   return new Date(dateStr + 'T00:00:00');
 }
 
@@ -268,6 +268,47 @@ export function calculateMonthlyGrades(sessions: Session[], months: number = 12)
   }
 
   return result;
+}
+
+/**
+ * Calculate the date range from the earliest session to now.
+ *
+ * @param sessions - All user sessions
+ * @returns Start date, end date, and total month count spanning the history
+ */
+export function calculateSessionDateRange(sessions: Session[]): {
+  startDate: Date;
+  endDate: Date;
+  monthCount: number;
+} {
+  if (sessions.length === 0) {
+    return { startDate: new Date(), endDate: new Date(), monthCount: 0 };
+  }
+
+  // Find earliest session date
+  const dates = sessions.map(s => parseDate(s.date)).sort((a, b) => a.getTime() - b.getTime());
+  const startDate = dates[0];
+  const endDate = new Date();
+
+  // Calculate months between start and end (inclusive)
+  const monthCount =
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1;
+
+  return { startDate, endDate, monthCount };
+}
+
+/**
+ * Calculate monthly grade data for ALL historical months.
+ * Returns data from the first session month to the current month.
+ *
+ * @param sessions - All user sessions
+ * @returns Monthly grade data spanning entire climbing history
+ */
+export function calculateAllMonthlyGrades(sessions: Session[]): MonthlyGradeData[] {
+  const { monthCount } = calculateSessionDateRange(sessions);
+  if (monthCount === 0) return [];
+
+  return calculateMonthlyGrades(sessions, monthCount);
 }
 
 /**
