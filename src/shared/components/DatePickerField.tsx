@@ -1,6 +1,9 @@
 import React from 'react';
 import { Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { colors, borderRadius, shadows } from '../design/theme';
+import { typography } from '../design/typography';
+import { spacing } from '../design/spacing';
 
 interface Props {
   date: Date;
@@ -60,28 +63,35 @@ export const DatePickerField: React.FC<Props> = ({ date, onChange, minimumDate, 
 
 const webInputStyle = {
   width: '100%',
-  background: '#FFFFFF',
-  borderRadius: 12,
-  padding: 12,
-  border: '1px solid #E2E8F0',
+  background: colors.surface,
+  borderRadius: borderRadius.lg,
+  padding: spacing.md,
+  border: `1px solid ${colors.border}`,
   fontSize: 16,
   fontFamily: 'inherit',
-  color: '#0F172A',
+  color: colors.text,
 };
 
 const styles = StyleSheet.create({
-  container: { marginBottom: 16 },
-  label: { color: '#0F172A', fontWeight: '600', marginBottom: 4 },
-  nativeButton: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+  container: { marginBottom: spacing.md },
+  label: {
+    ...typography.captionBold,
+    color: colors.text,
+    marginBottom: spacing.xs,
   },
-  nativeButtonText: { color: '#0F172A', fontSize: 16, fontWeight: '600' },
-  // webInput uses separate object: React Native StyleSheet rejects CSS border string
+  nativeButton: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    ...shadows.sm,
+  },
+  nativeButtonText: {
+    ...typography.body,
+    color: colors.text,
+  },
 });
 
 export default DatePickerField;

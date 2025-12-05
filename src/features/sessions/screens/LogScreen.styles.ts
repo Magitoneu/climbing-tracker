@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors, borderRadius } from '../../../shared/design/theme';
+import { colors, borderRadius, shadows, chalk } from '../../../shared/design/theme';
 import { typography } from '../../../shared/design/typography';
 import { spacing } from '../../../shared/design/spacing';
 import type { ViewStyle, TextStyle } from 'react-native';
@@ -9,8 +9,11 @@ const styles = StyleSheet.create({
     alignItems: 'center' as ViewStyle['alignItems'],
     backgroundColor: colors.primary,
     borderRadius: borderRadius.lg,
+    flexDirection: 'row' as ViewStyle['flexDirection'],
+    justifyContent: 'center' as ViewStyle['justifyContent'],
     marginBottom: spacing.sm,
     paddingVertical: spacing.md,
+    ...shadows.md,
   },
   addBoulderText: {
     ...typography.button,
@@ -93,16 +96,36 @@ const styles = StyleSheet.create({
     ...typography.body,
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     borderWidth: 1,
     marginBottom: spacing.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
+    ...shadows.sm,
   },
   emptyLoggedText: {
     ...typography.bodySmall,
     color: colors.textSecondary,
     marginBottom: spacing.sm,
+  },
+  emptyStateContainer: {
+    alignItems: 'center' as ViewStyle['alignItems'],
+    backgroundColor: chalk.smudge,
+    borderRadius: borderRadius.lg,
+    marginVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
+  },
+  emptyStateSubtitle: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+    textAlign: 'center' as TextStyle['textAlign'],
+  },
+  emptyStateTitle: {
+    ...typography.h4,
+    color: colors.text,
+    marginTop: spacing.md,
   },
   emptyText: {
     ...typography.bodySmall,
@@ -132,10 +155,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   loggedBouldersLabel: {
-    ...typography.captionBold,
+    ...typography.overline,
     color: colors.text,
-    marginBottom: spacing.xs,
-    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
   },
   manageSystemsButton: {
     alignSelf: 'flex-start' as ViewStyle['alignSelf'],
@@ -160,21 +183,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center' as ViewStyle['justifyContent'],
   },
   notesInput: {
-    ...typography.bodySmall,
+    ...typography.body,
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     borderWidth: 1,
-    height: 80,
+    minHeight: 100,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
     textAlignVertical: 'top' as TextStyle['textAlignVertical'],
+    ...shadows.sm,
   },
   notesLabel: {
-    ...typography.captionBold,
-    color: colors.text,
-    marginBottom: spacing.xs,
-    marginTop: spacing.md,
+    ...typography.overline,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
   },
   saveButton: {
     alignItems: 'center' as ViewStyle['alignItems'],
@@ -183,6 +207,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     marginTop: spacing.xl,
     paddingVertical: spacing.md,
+    ...shadows.lg,
   },
   saveButtonDisabled: {
     opacity: 0.7,
@@ -202,9 +227,9 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
   },
   sectionLabel: {
-    ...typography.captionBold,
-    color: colors.text,
-    marginBottom: spacing.xs,
+    ...typography.overline,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
   },
 });
 

@@ -11,6 +11,8 @@ import store from '../../../storage/simpleStore';
 import { addSession } from '../services/sessionService';
 import { auth } from '../../../config/firebase';
 import { colors } from '../../../shared/design/theme';
+import { spacing } from '../../../shared/design/spacing';
+import { Ionicons } from '@expo/vector-icons';
 import BoulderPill from '../components/BoulderPill';
 import BoulderModal from '../components/BoulderModal';
 import styles from './LogScreen.styles';
@@ -177,6 +179,7 @@ export default function LogScreen() {
           </TouchableOpacity>
         )}
         <TouchableOpacity onPress={openAddBoulder} style={styles.addBoulderButton}>
+          <Ionicons name="add-circle" size={22} color={colors.textOnPrimary} style={{ marginRight: spacing.xs }} />
           <Text style={styles.addBoulderText}>Add Boulder</Text>
         </TouchableOpacity>
         <View style={styles.bouldersContainer}>
@@ -213,7 +216,6 @@ export default function LogScreen() {
           )}
         </View>
         <Text style={styles.loggedBouldersLabel}>Logged Boulders</Text>
-        {boulders.length === 0 && <Text style={styles.emptyLoggedText}>None yet. Tap &quot;Add Boulder&quot;.</Text>}
         {boulders.map((b, i) => (
           <BoulderCard key={i} attempt={b} index={i} onDelete={removeBoulder} systemId={normalizedSystemId} />
         ))}
