@@ -7,11 +7,23 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "bundleIdentifier": "com.magitoneu.climbingtracker",
+      "supportsTablet": true,
+      "deploymentTarget": "15.1",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["com.googleusercontent.apps.478924932982-li069ndho7q23am800fc5jp3svomoaml"]
+          }
+        ]
+      }
     },
     "web": {
       "publicPath": "."

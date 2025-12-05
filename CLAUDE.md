@@ -30,7 +30,7 @@ pnpm test:coverage        # Generate coverage report
 ```
 
 ### Important Notes
-- **Package Manager:** This project uses **pnpm** exclusively (not npm/yarn)
+- **Package Manager:** This project uses **pnpm** exclusively (not npm/yarn). Version is locked via `packageManager` field in package.json (pnpm@10.18.2)
 - **Web Development:** Use `pnpm run web` for quickest iteration; open http://localhost:8081 in browser
 - **TypeScript:** Strict mode enabled (`tsconfig.json`)
 - **Testing:** Jest with React Native Testing Library (20 tests currently)
@@ -360,13 +360,15 @@ git commit -m "feat(grades)!: migrate to canonical grade system"
 
 ## Known Limitations & TODOs
 
-- **Limited Test Coverage:** 14 tests currently (primarily utils); need more component/integration tests
-- **Remaining Lint Warnings:** 228 ESLint warnings (down from 287) - mostly non-critical inline styles and any types
-- **Stats Placeholder:** StatsScreen and DashboardScreen not fully implemented
-- **Google OAuth in Expo Go:** Unreliable on native; production OAuth clients needed for standalone builds
+- **Limited Test Coverage:** 20 tests currently (primarily utils); need more component/integration tests
+- **Stats & Dashboard:** StatsScreen and DashboardScreen not fully implemented yet
+  - Stats should focus on individual performance and comparison with previous sessions (weekly/monthly/yearly reports)
+  - Dashboard should contain year/month goals and progress tracking
+- **Google OAuth in Expo Go:** Unreliable on native; production OAuth clients needed for standalone builds (see TODOs.md "Production Google Authentication" section)
 - **No Backfill:** Existing Firestore sessions lack canonical values until next edit/view (enriched on-the-fly)
-- **Approximation UI:** `~` marker shown for inexact grade conversions; consider legend/tooltip
+- **Approximation UI:** `~` marker shown for inexact grade conversions; consider legend/tooltip explanation
 - **Component Size:** SessionsScreen (423 lines) and LogScreen (368 lines) could benefit from further extraction
+- **Session Logging Enhancement:** Consider adding "Send" field to track whether boulder was completed or not
 
 ## Important Firestore Rules
 
@@ -382,7 +384,68 @@ match /users/{userId} {
 - **EAS Build:** Configured with `owner: "crider"` in app.json
 - **Scheme:** `climbingtracker` for deep linking
 - **Google OAuth:** Requires platform-specific client IDs (see TODOs.md "Production Google Authentication" section)
-- **Expo New Architecture:** Enabled (`newArchEnabled: true` in app.json)
+- **Expo New Architecture:** Disabled (`newArchEnabled: false` in app.json)
+
+## Xcode 26 Beta Compatibility
+
+When building with Xcode 26 beta (iOS 26 SDK), several fixes are required due to C++/Swift toolchain changes:
+
+### Required Podfile Fixes
+
+Add the following to your `ios/Podfile` in the `post_install` block:
+
+```ruby
+post_install do |installer|
+  react_native_post_install(...)
+
+  # Fix for Xcode 26+ compatibility
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      # C++20 for newer C++ standards
+      config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+      config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+      # Disable Swift explicit modules (required for Xcode 26 beta)
+      config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
+    end
+  end
+
+  # Also apply to the main project
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
+  end
+end
+```
+
+### react-native-screens Patch
+
+The `react-native-screens` library requires a patch for `std::move` compatibility. Add at the top of `node_modules/react-native-screens/ios/RNSScreenStackHeaderConfig.mm`:
+
+```cpp
+// Fix for Xcode 26 C++ compatibility
+#include <utility>
+```
+
+**Note:** This patch is in `node_modules` and will be lost on reinstall. Consider using `patch-package` for persistence.
+
+### expo-dev-client Incompatibility
+
+The `expo-dev-client` package has Swift compatibility issues with Xcode 26 beta. If you encounter errors like `value of type 'ExpoReactDelegate' has no member 'reactNativeFactory'`, remove it:
+
+```bash
+pnpm remove expo-dev-client
+```
+
+### Simulator Device Names
+
+Xcode 26 includes iOS 26 simulators with iPhone 17 series devices. Use:
+
+```bash
+npx expo run:ios --device "iPhone 17 Pro"
+```
+
+### After expo prebuild
+
+If you run `npx expo prebuild --platform ios`, the Podfile changes will be lost. Re-apply the fixes after regenerating.
 
 ## Reference Files
 

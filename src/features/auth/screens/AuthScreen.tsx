@@ -16,24 +16,25 @@ import { makeRedirectUri } from 'expo-auth-session';
 
 // Ensures auth session completes properly when app is foregrounded again
 WebBrowser.maybeCompleteAuthSession();
-// Client IDs (replace with your own from Google Cloud console)
-// Web client must have the Expo proxy redirect added; native iOS/Android clients will be used once you build.
+// Client IDs from Google Cloud console
 const WEB_CLIENT_ID = '478924932982-li069ndho7q23am800fc5jp3svomoaml.apps.googleusercontent.com';
-// If you later add native builds, set these:
-const IOS_CLIENT_ID = undefined; // e.g., 'xxxxxx-ios.apps.googleusercontent.com'
+// iOS client (auto-created by Google Service for com.magitoneu.climbingtracker)
+const IOS_CLIENT_ID = '478924932982-li069ndho7q23am800fc5jp3svomoaml.apps.googleusercontent.com';
+// Reversed client ID for iOS URL scheme
+const IOS_REVERSED_CLIENT_ID = 'com.googleusercontent.apps.478924932982-li069ndho7q23am800fc5jp3svomoaml';
 const ANDROID_CLIENT_ID = undefined; // e.g., 'xxxxxx-android.apps.googleusercontent.com'
 
 // Decide redirect URI strategy.
 // We force the Expo proxy in development / Expo Go because only the https proxy URL is whitelisted in Google.
-// For future standalone builds we want a custom scheme-based redirect.
+// For standalone iOS builds, use the reversed client ID as the scheme (required by Google OAuth).
 const isStandalone = Platform.select({
   ios: typeof navigator !== 'undefined' && !navigator.userAgent?.includes('Expo'),
   android: typeof navigator !== 'undefined' && !navigator.userAgent?.includes('Expo'),
   default: false,
 });
 
-// Proxy (https://auth.expo.io/@owner/slug) used when not standalone. Custom scheme when built.
-const redirectUri = isStandalone ? makeRedirectUri({ scheme: 'climbingtracker' }) : makeRedirectUri(); // default -> proxy in Expo Go
+// For iOS standalone: use reversed client ID scheme. For Expo Go: use proxy.
+const redirectUri = isStandalone ? makeRedirectUri({ scheme: IOS_REVERSED_CLIENT_ID }) : makeRedirectUri(); // default -> proxy in Expo Go
 
 if (__DEV__) {
   console.log('[Auth] Using redirect URI:', redirectUri, 'isStandalone:', isStandalone);
