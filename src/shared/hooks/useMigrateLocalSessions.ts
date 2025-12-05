@@ -56,6 +56,9 @@ export function useMigrateLocalSessions(enabled: boolean) {
           return;
         }
         const count = await migrateLocalSessions(local);
+        // Clear local sessions after successful migration to prevent re-migration
+        // when a different user logs in on the same device
+        await store.removeItem('sessions');
         if (!cancelled) {
           setAdded(count);
           setMigrated(true);
