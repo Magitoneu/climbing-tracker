@@ -34,19 +34,19 @@ export const PersonalBestsCard: React.FC<Props> = ({ bests }) => {
           <Text style={styles.statLabel}>Total Sends</Text>
         </View>
 
-        {/* Best Streak */}
+        {/* Best Streak (weeks) */}
         <View style={styles.statBox}>
           <Ionicons name="flame" size={24} color={accent.fire} />
-          <Text style={styles.statValue}>{bests.bestStreak}</Text>
+          <Text style={styles.statValue}>{bests.bestStreak}w</Text>
           <Text style={styles.statLabel}>Best Streak</Text>
         </View>
 
-        {/* Current Streak or Total Sessions */}
+        {/* Current Streak (weeks) or Total Sessions */}
         <View style={styles.statBox}>
           {bests.currentStreak > 0 ? (
             <>
               <Ionicons name="flash" size={24} color={colors.success} />
-              <Text style={styles.statValue}>{bests.currentStreak}</Text>
+              <Text style={styles.statValue}>{bests.currentStreak}w</Text>
               <Text style={styles.statLabel}>Current Streak</Text>
             </>
           ) : (

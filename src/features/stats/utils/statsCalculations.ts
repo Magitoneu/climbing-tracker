@@ -445,40 +445,74 @@ export function calculatePersonalBests(allSessions: Session[], currentMonthSessi
 }
 
 /**
- * Calculate climbing streak (consecutive days with sessions).
+ * Get the ISO week number for a date.
+ * Week starts on Monday.
+ */
+function getWeekNumber(date: Date): { year: number; week: number } {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return { year: d.getUTCFullYear(), week: weekNo };
+}
+
+/**
+ * Calculate climbing streak (consecutive weeks with at least one session).
+ * A week runs Monday to Sunday.
  */
 export function calculateStreak(sessions: Session[]): { current: number; best: number } {
   if (sessions.length === 0) {
     return { current: 0, best: 0 };
   }
 
-  // Get unique session dates sorted descending (most recent first)
-  const dates = [...new Set(sessions.map(s => s.date))].sort().reverse();
+  // Get unique weeks that have sessions (year-week format)
+  const weeksWithSessions = new Set<string>();
+  for (const session of sessions) {
+    const date = parseDate(session.date);
+    const { year, week } = getWeekNumber(date);
+    weeksWithSessions.add(`${year}-${week.toString().padStart(2, '0')}`);
+  }
 
-  if (dates.length === 0) {
+  if (weeksWithSessions.size === 0) {
     return { current: 0, best: 0 };
   }
 
-  let currentStreak = 0;
-  let bestStreak = 0;
+  // Sort weeks descending (most recent first)
+  const sortedWeeks = [...weeksWithSessions].sort().reverse();
+
+  // Check if current week or last week has a session (for current streak)
+  const today = new Date();
+  const { year: currentYear, week: currentWeek } = getWeekNumber(today);
+  const currentWeekKey = `${currentYear}-${currentWeek.toString().padStart(2, '0')}`;
+
+  // Calculate last week
+  const lastWeekDate = new Date(today);
+  lastWeekDate.setDate(lastWeekDate.getDate() - 7);
+  const { year: lastYear, week: lastWeek } = getWeekNumber(lastWeekDate);
+  const lastWeekKey = `${lastYear}-${lastWeek.toString().padStart(2, '0')}`;
+
+  const hasCurrentWeek = weeksWithSessions.has(currentWeekKey);
+  const hasLastWeek = weeksWithSessions.has(lastWeekKey);
+  const isRecent = hasCurrentWeek || hasLastWeek;
+
+  // Helper to get the previous week key
+  const getPrevWeekKey = (weekKey: string): string => {
+    const [y, w] = weekKey.split('-').map(Number);
+    if (w === 1) {
+      // Go to last week of previous year (approximately week 52)
+      return `${y - 1}-52`;
+    }
+    return `${y}-${(w - 1).toString().padStart(2, '0')}`;
+  };
+
+  // Calculate best streak
+  let bestStreak = 1;
   let streak = 1;
 
-  // Check if the most recent session is today or yesterday for current streak
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const mostRecentDate = parseDate(dates[0]);
-  const isRecent = mostRecentDate.getTime() === today.getTime() || mostRecentDate.getTime() === yesterday.getTime();
-
-  // Calculate streaks
-  for (let i = 1; i < dates.length; i++) {
-    const prev = parseDate(dates[i - 1]);
-    const curr = parseDate(dates[i]);
-    const diffDays = Math.round((prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 1) {
+  for (let i = 1; i < sortedWeeks.length; i++) {
+    const expectedPrev = getPrevWeekKey(sortedWeeks[i - 1]);
+    if (sortedWeeks[i] === expectedPrev) {
       streak += 1;
     } else {
       bestStreak = Math.max(bestStreak, streak);
@@ -487,17 +521,18 @@ export function calculateStreak(sessions: Session[]): { current: number; best: n
   }
   bestStreak = Math.max(bestStreak, streak);
 
-  // Current streak only counts if we've climbed recently
-  if (isRecent) {
-    // Recalculate from the start
-    currentStreak = 1;
-    for (let i = 1; i < dates.length; i++) {
-      const prev = parseDate(dates[i - 1]);
-      const curr = parseDate(dates[i]);
-      const diffDays = Math.round((prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24));
+  // Calculate current streak (only if we climbed this week or last week)
+  let currentStreak = 0;
 
-      if (diffDays === 1) {
+  if (isRecent) {
+    // Start from the most recent week with a session
+    currentStreak = 1;
+    let expectedWeek = getPrevWeekKey(sortedWeeks[0]);
+
+    for (let i = 1; i < sortedWeeks.length; i++) {
+      if (sortedWeeks[i] === expectedWeek) {
         currentStreak += 1;
+        expectedWeek = getPrevWeekKey(sortedWeeks[i]);
       } else {
         break;
       }
